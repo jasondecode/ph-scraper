@@ -4,6 +4,7 @@ namespace App\Services\Scraper\Fetch;
 use App\Services\Scraper\Http\GuzzleClient;
 use App\Services\Scraper\Models\Products as ProductsModel;
 use App\Services\Scraper\Convert\Products as ConvertProducts;
+use App\Services\Scraper\Convert\HomePage as ConvertHomePage;
 
 class HomepageProducts implements FetchInterface
 {
@@ -13,6 +14,9 @@ class HomepageProducts implements FetchInterface
     /** @var array */
     protected $products;
 
+    /** @var \App\Services\Scraper\Convert\HomePage */
+    protected $pageInfo;
+
     public function fetch(GuzzleClient $guzzleClient)
     {
         $productsModel = new ProductsModel;
@@ -21,11 +25,15 @@ class HomepageProducts implements FetchInterface
 
         $response = $guzzleClient->create()->post(self::REQUEST_URL, json_encode($requestBody));    
 
-        $convertedProducts = ConvertProducts::fromArray(
-            json_decode($response, true)['data']['sections']['edges'][0]['node']['posts']['edges']
+        $sections = json_decode($response, true)['data']['sections'];
+
+        $this->products = ConvertProducts::fromArray(
+            $sections['edges'][0]['node']['posts']['edges']
+        )->getProducts();
+
+        $this->pageInfo = ConvertHomePage::fromArray(
+            $sections['pageInfo']
         );
-        
-        $this->products = $convertedProducts->getProducts();
 
         return $this;
     }
@@ -33,5 +41,10 @@ class HomepageProducts implements FetchInterface
     public function getProducts(): array
     {
         return $this->products;
+    }
+
+    public function getPageInfo(): ConvertHomePage
+    {
+        return $this->pageInfo;
     }
 }

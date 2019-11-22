@@ -3,7 +3,7 @@ namespace App\Services\Scraper\Convert;
 
 class Product
 {
-    /** @var string $id */
+    /** @var string */
     protected $id;
 
     /** @var string */

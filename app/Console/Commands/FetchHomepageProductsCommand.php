@@ -20,11 +20,17 @@ class FetchHomepageProductsCommand extends Command
     
     public function handle(Scraper $scraper)
     {
-        $this->info('fetching products from homepage..');
+        $this->info('fetching homepage..');
 
-        $products = $scraper->fetchHomepageProducts()->getProducts();
+        $fetch = $scraper->fetchHomepageProducts();
 
-        dump($products);
+        $this->info('products:');
+
+        dump($fetch->getProducts());
+
+        $this->info('page info:');
+
+        dump($fetch->getPageInfo());
 
         $this->info('all done 🔥');
     }
