@@ -4,7 +4,7 @@ namespace App\Services\Scraper\Fetch;
 use App\Services\Scraper\Http\GuzzleClient;
 use App\Services\Scraper\Models\Products as ProductsModel;
 use App\Services\Scraper\Convert\Products as ConvertProducts;
-use App\Services\Scraper\Convert\HomePage as ConvertHomePage;
+use App\Services\Scraper\Convert\HomePage as ConvertHomepage;
 
 class HomepageProducts implements FetchInterface
 {
@@ -31,7 +31,7 @@ class HomepageProducts implements FetchInterface
             $sections['edges'][0]['node']['posts']['edges']
         )->getProducts();
 
-        $this->pageInfo = ConvertHomePage::fromArray(
+        $this->pageInfo = ConvertHomepage::fromArray(
             $sections['pageInfo']
         );
 

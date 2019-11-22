@@ -1,7 +1,7 @@
 <?php
 namespace App\Services\Scraper\Convert;
 
-class HomePage
+class Homepage
 {
     /** @var string */
     protected $endCursor;
