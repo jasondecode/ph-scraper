@@ -8,7 +8,7 @@ class GuzzleClient
     /** @var \GuzzleHttp\Client */
     private $client;
 
-    public function create($headers = [])
+    public function create($headers = []): self
     {
         $headers = [
             "user-agent" => config('scraper.user_agent'),
@@ -32,7 +32,7 @@ class GuzzleClient
         return $this;
     }
 
-    public function get($url, $options = [])
+    public function get(string $url, array $options = []): string
     {   
         $clientResponse = $this->client->get($url, [
             'query' => $options
@@ -41,10 +41,10 @@ class GuzzleClient
         return $clientResponse->getBody()->getContents();
     }
 
-    public function post($url, $options)
+    public function post(string $url, string $body): string
     {
         $clientResponse = $this->client->post($url, [
-            'body' => $options
+            'body' => $body
         ]);
 
         return $clientResponse->getBody()->getContents();
