@@ -1,5 +1,5 @@
 <?php
-namespace App\Services\Scraper\Model;
+namespace App\Services\Scraper\Models;
 
 use Illuminate\Database\Eloquent\Model;
 

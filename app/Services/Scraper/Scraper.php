@@ -2,7 +2,8 @@
 namespace App\Services\Scraper;
 
 use App\Services\Scraper\Http\GuzzleClient;
-use App\Services\Scraper\Model\Products;
+use App\Services\Scraper\Fetch\HomepageProducts;
+use App\Services\Scraper\Fetch\Makers;
 
 class Scraper
 {
@@ -12,24 +13,18 @@ class Scraper
     /** @var \GuzzleHttp\Client */
     private $client;
 
-    /** @var \App\Services\Scraper\Model\Products */
-    private $products;
-
-    public function __construct(GuzzleClient $client, Products $products)
+    public function __construct(GuzzleClient $client)
     {
         $this->client = $client;    
-
-        $this->products = $products;
     }
 
-    public function fetchHomepageProducts(): string
+    public function fetchHomepageProducts(): HomepageProducts
     {                
-        $url = 'https://www.producthunt.com/frontend/graphql';
-        
-        $requestBody = $this->products->getHomepageRequestBody();
-        
-        return $this->client
-            ->create()
-            ->post($url, json_encode($requestBody));        
+        return (new HomepageProducts)->fetch($this->client);
+    }
+
+    public function fetchMakers(): Makers
+    {
+        return (new Makers)->fetch($this->client);
     }
 }
