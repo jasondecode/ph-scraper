@@ -6,8 +6,14 @@ use App\Services\Scraper\Model\Products;
 
 class Scraper
 {
+    /** @var int */
+    private $requestMaxPages = 5;
+
     /** @var \GuzzleHttp\Client */
     private $client;
+
+    /** @var \App\Services\Scraper\Model\Products */
+    private $products;
 
     public function __construct(GuzzleClient $client, Products $products)
     {

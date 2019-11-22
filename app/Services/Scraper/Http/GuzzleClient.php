@@ -8,7 +8,7 @@ class GuzzleClient
     /** @var \GuzzleHttp\Client */
     private $client;
 
-    public function create($headers = []): self
+    public function create(array $headers = []): self
     {
         $headers = [
             "user-agent" => config('scraper.user_agent'),
