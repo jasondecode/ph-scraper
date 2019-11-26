@@ -25,6 +25,7 @@ class HomepageProducts
     {
         return $this->products;
     }
+    
     public function getPageInfo(): ConvertHomePage
     {
         return $this->pageInfo;

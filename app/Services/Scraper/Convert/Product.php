@@ -24,7 +24,7 @@ class Product
         $this->votes = $votes;
     }
 
-    public static function fromArray(array $edge): self
+    public static function fromArray(array $edge): Product
     {
         $node = $edge['node'];
 

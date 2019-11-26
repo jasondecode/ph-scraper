@@ -18,7 +18,7 @@ class Homepage
         $this->hasNextPage = $hasNextPage;
     }
 
-    public static function fromArray(array $pageInfo): self
+    public static function fromArray(array $pageInfo): Homepage
     {
         return new self(
             $pageInfo['endCursor'],

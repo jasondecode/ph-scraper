@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 class Products extends Model
 {
     /** @var array */
-    private $homepageRequestBody = [
+    protected $homepageRequestBody = [
         "operationName" => "HomePage",
         "variables" => [
             "cursor" => "",

@@ -11,10 +11,10 @@ use App\Services\Scraper\Profiles\HomepageProducts;
 class Scraper
 {   
     /** @var int|null */
-    protected $maximumCrawlCount;
+    protected $maximumCrawlCount = null;
 
     /** @var int|null */
-    protected $startFromPaginationNumber;
+    protected $startFromPaginationNumber = null;
 
     /** @var \GuzzleHttp\Client */
     protected $client;
@@ -29,7 +29,7 @@ class Scraper
     protected $clientHeadder = [];
 
     /** @var array|null */
-    protected $clientBody;
+    protected $clientBody = null;
 
     /** @var string|null */
     protected $scraperProfileClass = null;
@@ -48,7 +48,7 @@ class Scraper
             RequestOptions::BODY => $clientOptions['body']
         ]);
 
-        return new static($client);
+        return new self($client);
     }
 
     public function __construct(Client $client)

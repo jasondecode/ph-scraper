@@ -13,7 +13,7 @@ class Products
         $this->products = $products;
     }
 
-    public static function fromArray(array $edges): self
+    public static function fromArray(array $edges): Products
     {
         $products = collect($edges)->map(function ($edge) {
             return Product::fromArray($edge);
