@@ -2,29 +2,169 @@
 namespace App\Services\Scraper;
 
 use App\Services\Scraper\Http\GuzzleClient;
-use App\Services\Scraper\Fetch\HomepageProducts;
-use App\Services\Scraper\Fetch\Makers;
+use GuzzleHttp\Client;
+use GuzzleHttp\Pool;
+use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\RequestOptions;
+use App\Services\Scraper\Profiles\HomepageProducts;
 
 class Scraper
-{
-    /** @var int */
-    private $requestMaxPages = 5;
+{   
+    /** @var int|null */
+    protected $maximumCrawlCount;
+
+    /** @var int|null */
+    protected $startFromPaginationNumber;
 
     /** @var \GuzzleHttp\Client */
-    private $client;
+    protected $client;
 
-    public function __construct(GuzzleClient $client)
-    {
-        $this->client = $client;    
+    /** @var string */
+    protected $scrapeUrl;
+
+    /** @var string */
+    protected $clientMethod;
+
+    /** @var array */
+    protected $clientHeadder = [];
+
+    /** @var array|null */
+    protected $clientBody;
+
+    /** @var string|null */
+    protected $scraperProfileClass = null;
+
+    /** @var string */
+    protected $navigationType;
+
+    public static function createClient(array $clientOptions): Scraper
+    {   
+        $client = new Client([
+            RequestOptions::COOKIES => true,
+            RequestOptions::CONNECT_TIMEOUT => 10,
+            RequestOptions::TIMEOUT => 10,
+            RequestOptions::ALLOW_REDIRECTS => false,
+            RequestOptions::HEADERS => $clientOptions['headers'],
+            RequestOptions::BODY => $clientOptions['body']
+        ]);
+
+        return new static($client);
     }
 
-    public function fetchHomepageProducts(): HomepageProducts
-    {                
-        return (new HomepageProducts)->fetch($this->client);
+    public function __construct(Client $client)
+    {
+        $this->client = $client;   
     }
 
-    public function fetchMakers(): Makers
+    public function setClientHeaders(array $clientHeaders): Scraper
     {
-        return (new Makers)->fetch($this->client);
+        $this->clientHeaders = $clientHeaders;
+
+        return $this;
+    }
+
+    public function getClientHeaders(): array
+    {
+        return $this->clientHeadder;
+    }
+
+    public function setMaximumCrawlCount(int $maximumCrawlCount): Scraper
+    {
+        $this->setMaximumCrawlCount = $maximumCrawlCount;
+
+        return $this;
+    }
+
+    public function getMaximumCrawlCount(): ?int
+    {
+        return $this->maximumCrawlCount;
+    }
+
+    public function setStartFromPaginationNumber(int $startFromPaginationNumber): Scraper
+    {
+        $this->startFromPaginationNumber = $startFromPaginationNumber;
+        
+        return $this;
+    }
+
+    public function setScraperProfileClass(string $scraperProfileClass): Scraper
+    {
+        $this->scraperProfileClass = $scraperProfileClass;
+
+        return $this;
+    }
+
+    public function scraperProfileClass(): string
+    {
+        return $this->scraperProfileClass;
+    }
+
+    public function setNavigationType(string $navigationType): Scraper
+    {
+        $this->navigationType = $navigationType;
+
+        return $this;
+    }
+
+    public function getNavigationType(): string
+    {
+        return $this->navigationType;
+    }
+
+    public function getStartFromPaginationNumber(): ?int
+    {
+        return $this->startFromPaginationNumber;
+    }
+
+    public function setScrapeUrl(string $scrapeUrl): Scraper
+    {
+        $this->scrapeUrl = $scrapeUrl;
+
+        return $this;
+    }
+
+    public function getScrapeUrl(): string
+    {
+        return $this->scrapeUrl;
+    }
+
+    public function setRequestMethod(string $requestMethod): Scraper
+    {
+        $this->getRequestMethod = $requestMethod;
+
+        return $this;
+    }
+
+    public function getRequestMethod(): string
+    {
+        return $this->getRequestMethod;
+    }
+
+    public function setClientBody(array $clientBody): Scraper
+    {
+        $this->clientBody = $clientBody;
+
+        return $this;
+    }
+
+    public function getClientBody(): array
+    {
+        return $this->clientBody;
+    }
+
+    public function fetch()
+    {   
+        $response = $this->client->request(
+            $this->getRequestMethod(),
+            $this->getScrapeUrl()
+        )
+        ->getBody()
+        ->getContents();
+            
+        if (! is_null($this->scraperProfileClass())) {
+            return (new $this->scraperProfileClass())->parse($response);
+        }
+
+        return $response;
     }
 }

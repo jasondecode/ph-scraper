@@ -4,6 +4,8 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Services\Scraper\Scraper;
+use App\Services\Scraper\Profiles\HomepageProducts;
+use App\Services\Scraper\Models\Products;
 
 class FetchHomepageProductsCommand extends Command
 {
@@ -22,15 +24,29 @@ class FetchHomepageProductsCommand extends Command
     {
         $this->info('fetching homepage..');
 
-        $fetch = $scraper->fetchHomepageProducts();
+        $clientOptions = [
+            'headers' => [
+                'user-agent' => config('scraper.user_agent'),
+                'content-type' => 'application/json'
+            ],
+            'body' => json_encode((new Products)->getHomepageRequestBody()),
+        ];
 
+        $response = $scraper::createClient($clientOptions)
+            ->setScrapeUrl('https://www.producthunt.com/frontend/graphql')
+            ->setRequestMethod('POST')
+            ->setScraperProfileClass(HomepageProducts::class)
+            ->setMaximumCrawlCount(5)
+            ->setNavigationType('cursor')
+            ->fetch();
+        
         $this->info('products:');
 
-        dump($fetch->getProducts());
+        dump($response->getProducts());
 
         $this->info('page info:');
 
-        dump($fetch->getPageInfo());
+        dump($response->getPageInfo());
 
         $this->info('all done 🔥');
     }
