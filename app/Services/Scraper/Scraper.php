@@ -5,13 +5,16 @@ use App\Services\Scraper\Http\GuzzleClient;
 use GuzzleHttp\Client;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\RequestOptions;
 use App\Services\Scraper\Profiles\HomepageProducts;
+use App\Services\Scraper\Navigation\Cursor;
+
 
 class Scraper
 {   
-    /** @var int|null */
-    protected $maximumCrawlCount = null;
+    /** @var int */
+    protected $maximumCrawlCount = 1;
 
     /** @var int|null */
     protected $startFromPaginationNumber = null;
@@ -36,6 +39,9 @@ class Scraper
 
     /** @var string */
     protected $navigationType;
+
+    /** @var GuzzleHttp\Psr7\Response */
+    protected $response;
 
     public static function createClient(array $clientOptions): Scraper
     {   
@@ -70,7 +76,7 @@ class Scraper
 
     public function setMaximumCrawlCount(int $maximumCrawlCount): Scraper
     {
-        $this->setMaximumCrawlCount = $maximumCrawlCount;
+        $this->maximumCrawlCount = $maximumCrawlCount;
 
         return $this;
     }
@@ -152,19 +158,60 @@ class Scraper
         return $this->clientBody;
     }
 
+    public function getResponse(): Response
+    {
+        return $this->response;
+    }
+
     public function fetch()
     {   
-        $response = $this->client->request(
-            $this->getRequestMethod(),
-            $this->getScrapeUrl()
-        )
-        ->getBody()
-        ->getContents();
-            
-        if (! is_null($this->scraperProfileClass())) {
-            return (new $this->scraperProfileClass())->parse($response);
+        if ($this->getNavigationType() === 'graphql-cursor') {
+            return $this->startScraperWithGraphQLCursor();
+        }
+        
+        if ($this->getNavigationType() === 'url-pagination') {
+            $this->startScraperWithUrlPagination();
         }
 
-        return $response;
+        return $this;
+    }
+
+    protected function startScraperWithGraphQLCursor()
+    {
+        return $this->scrapeThroughCrawlCount(function () {            
+            $cursor = new GraphQLCursor;
+
+            $body = json_decode($this->client->getConfig()['body'], true);
+
+            $body['variables']['cursor'] = $cursor->getNextPageCursor();
+
+            $this->response = $this->client->request(
+                $this->getRequestMethod(),
+                $this->getScrapeUrl(), 
+                ['body' => json_encode($body)]
+            );
+            
+            if (! is_null($this->scraperProfileClass())) {
+                $parsedResponse = (new $this->scraperProfileClass())->parse($this);
+
+                $nextPageCursor = $parsedResponse->getPageInfo()->getEndCursor();
+
+                $cursor->setNextPageCursor($nextPageCursor);
+                
+                yield $parsedResponse;
+            }
+        });
+    }
+
+    protected function startScraperWithUrlPagination()
+    {
+
+    }
+
+    protected function scrapeThroughCrawlCount($callback)
+    {
+        for ($i = $this->startFromPaginationNumber; $i <= $this->maximumCrawlCount; $i++) {
+            return call_user_func($callback);
+        }
     }
 }

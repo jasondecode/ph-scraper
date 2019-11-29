@@ -29,24 +29,26 @@ class FetchHomepageProductsCommand extends Command
                 'user-agent' => config('scraper.user_agent'),
                 'content-type' => 'application/json'
             ],
-            'body' => json_encode((new Products)->getHomepageRequestBody()),
+            'body' => (new Products)->getHomepageRequestBody(),
         ];
 
-        $response = $scraper::createClient($clientOptions)
+        $responses = $scraper::createClient($clientOptions)
             ->setScrapeUrl('https://www.producthunt.com/frontend/graphql')
             ->setRequestMethod('POST')
             ->setScraperProfileClass(HomepageProducts::class)
-            ->setMaximumCrawlCount(5)
-            ->setNavigationType('cursor')
+            ->setMaximumCrawlCount(1)
+            ->setNavigationType('graphql-cursor')
             ->fetch();
         
-        $this->info('products:');
+        foreach ($responses as $response) {
+            $this->info('products:');
 
-        dump($response->getProducts());
+            dump($response->getProducts());
 
-        $this->info('page info:');
+            $this->info('page info:');
 
-        dump($response->getPageInfo());
+            dump($response->getPageInfo());
+        }
 
         $this->info('all done 🔥');
     }
