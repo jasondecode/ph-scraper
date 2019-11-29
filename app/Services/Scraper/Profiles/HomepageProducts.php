@@ -2,12 +2,13 @@
 namespace App\Services\Scraper\Profiles;
 
 use App\Services\Scraper\Scraper;
+use App\Services\Scraper\Navigation\GraphQLCursor;
 use App\Services\Scraper\Convert\Products as ConvertProducts;
 use App\Services\Scraper\Convert\HomePage as ConvertHomepage;
 
 class HomepageProducts
 {
-    /** App\Services\Scraper\Scraper */
+    /** @var App\Services\Scraper\Scraper */
     protected $scraper;
 
     public function __construct(Scraper $scraper)
@@ -15,18 +16,7 @@ class HomepageProducts
         $this->scraper = $scraper;
     }
 
-    public function getRequestOptions($cursor): array
-    {
-        $body = json_decode($this->scraper->getClient()->getConfig()['body'], true);
-
-        $body['variables']['cursor'] = $cursor->getNextPageCursor();
-        
-        return [
-            'body' => json_encode($body)
-        ];
-    }
-
-    public function parse(): HomepageProducts
+    public function onRequestFulfilled(): HomepageProducts
     {
         $responseContent = $this->scraper->getResponse()
             ->getBody()
@@ -53,5 +43,21 @@ class HomepageProducts
     public function getPageInfo(): ConvertHomePage
     {
         return $this->pageInfo;
+    }
+
+    public function getEndCursor(): string
+    {
+        return $this->pageInfo->getEndCursor();
+    }
+
+    public function getRequestOptions(GraphQLCursor $graphQLCursor): array
+    {
+        $body = json_decode($this->scraper->getClient()->getConfig()['body'], true);
+
+        $body['variables']['cursor'] = $graphQLCursor->getNextPageCursor();
+        
+        return [
+            'body' => json_encode($body)
+        ];
     }
 }

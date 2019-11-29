@@ -17,6 +17,12 @@ class Scraper
 
     /** @var int|null */
     protected $startFromPaginationNumber = null;
+    
+    /** @var int|null */
+    protected $minimumDelayBetweenRequests = null;
+
+    /** @var int|null */
+    protected $maximumDelayBetweenRequests = null;
 
     /** @var \GuzzleHttp\Client */
     protected $client;
@@ -95,6 +101,30 @@ class Scraper
     public function getStartFromPaginationNumber(): int
     {
         return $this->startFromPaginationNumber ?? 1;
+    }
+
+    public function setMinimumDelayBetweenRequests(int $minimumDelayBetweenRequests): Scraper
+    {
+        $this->minimumDelayBetweenRequests = $minimumDelayBetweenRequests;
+        
+        return $this;
+    }
+
+    public function getMinimumDelayBetweenRequests(): int
+    {                
+        return $this->minimumDelayBetweenRequests ?? 0;
+    }
+
+    public function setMaximumDelayBetweenRequests(int $maximumDelayBetweenRequests): Scraper
+    {
+        $this->maximumDelayBetweenRequests = $maximumDelayBetweenRequests;
+        
+        return $this;
+    }
+
+    public function getMaximumDelayBetweenRequests(): int
+    {                
+        return $this->maximumDelayBetweenRequests ?? 0;
     }
 
     public function setScraperProfileClass(string $scraperProfileClass): Scraper
@@ -182,9 +212,9 @@ class Scraper
 
     protected function startScraperWithGraphQLCursor(): Generator
     {        
-        $cursor = new GraphQLCursor;
+        $graphQLCursor = new GraphQLCursor;
 
-        return $this->scrapeThroughCrawlCount(function () use ($cursor) {                                    
+        return $this->scrapeThroughCrawlCount(function () use ($graphQLCursor) {                                    
             $scraperProfileClass = $this->scraperProfileClass();
     
             $scraperProfile = new $scraperProfileClass($this);
@@ -192,14 +222,14 @@ class Scraper
             $this->response = $this->client->request(
                 $this->requestMethod,
                 $this->scrapeUrl, 
-                $scraperProfile->getRequestOptions($cursor)
+                $scraperProfile->getRequestOptions($graphQLCursor)
             );
             
-            $parsedResponse = $scraperProfile->parse();
+            $parsedResponse = $scraperProfile->onRequestFulfilled();
 
-            $nextPageCursor = $parsedResponse->getPageInfo()->getEndCursor();
+            $nextPageCursor = $scraperProfile->getEndCursor();
 
-            $cursor->setNextPageCursor($nextPageCursor);
+            $graphQLCursor->setNextPageCursor($nextPageCursor);
             
             return $parsedResponse;            
         });
@@ -214,8 +244,16 @@ class Scraper
 
     protected function scrapeThroughCrawlCount($callback): Generator
     {        
-        for ($i = $this->getStartFromPaginationNumber(); $i <= $this->getMaximumCrawlCount(); $i++) {        
-            yield call_user_func($callback);
+        for ($i = $this->getStartFromPaginationNumber(); $i <= $this->getMaximumCrawlCount(); $i++) {   
+            $response = call_user_func($callback);
+                        
+            if ($i > 1) {
+                $delayBetweenRequests = rand($this->minimumDelayBetweenRequests, $this->maximumDelayBetweenRequests);
+
+                usleep($delayBetweenRequests);
+            }
+
+            yield $response;
         }        
     }
 }

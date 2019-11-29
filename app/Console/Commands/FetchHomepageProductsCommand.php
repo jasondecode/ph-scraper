@@ -37,8 +37,10 @@ class FetchHomepageProductsCommand extends Command
             ->setRequestMethod('POST')
             ->setScraperProfileClass(HomepageProducts::class)
             ->setMaximumCrawlCount(2)
+            ->setMinimumDelayBetweenRequests(1000000)
+            ->setMaximumDelayBetweenRequests(2000000)
             ->setNavigationType('graphql-cursor')
-            ->fetch();
+            ->fetch();   
         
         collect($responses)                    
             ->sortBy('votes')
