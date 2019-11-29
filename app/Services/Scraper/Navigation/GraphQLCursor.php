@@ -11,7 +11,7 @@ class GraphQLCursor
         return $this->nextPageCursor;
     }
 
-    public function setNextPageCursor(string $nextPageCursor): Cursor
+    public function setNextPageCursor(string $nextPageCursor): GraphQLCursor
     {
         $this->nextPageCursor = $nextPageCursor;
 

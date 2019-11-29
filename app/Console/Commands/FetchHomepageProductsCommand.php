@@ -36,20 +36,22 @@ class FetchHomepageProductsCommand extends Command
             ->setScrapeUrl('https://www.producthunt.com/frontend/graphql')
             ->setRequestMethod('POST')
             ->setScraperProfileClass(HomepageProducts::class)
-            ->setMaximumCrawlCount(1)
+            ->setMaximumCrawlCount(2)
             ->setNavigationType('graphql-cursor')
             ->fetch();
         
-        foreach ($responses as $response) {
-            $this->info('products:');
+        collect($responses)                    
+            ->sortBy('votes')
+            ->each(function ($response) {
+                $this->info('products:');
 
-            dump($response->getProducts());
+                dump($response->getProducts());
 
-            $this->info('page info:');
+                $this->info('page info:');
 
-            dump($response->getPageInfo());
-        }
-
+                dump($response->getPageInfo());
+            });
+        
         $this->info('all done 🔥');
     }
 }

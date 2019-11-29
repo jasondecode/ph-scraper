@@ -7,14 +7,13 @@ use GuzzleHttp\Pool;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\RequestOptions;
-use App\Services\Scraper\Profiles\HomepageProducts;
-use App\Services\Scraper\Navigation\Cursor;
-
+use App\Services\Scraper\Navigation\GraphQLCursor;
+use Generator;
 
 class Scraper
 {   
-    /** @var int */
-    protected $maximumCrawlCount = 1;
+    /** @var int|null */
+    protected $maximumCrawlCount = null;
 
     /** @var int|null */
     protected $startFromPaginationNumber = null;
@@ -26,7 +25,7 @@ class Scraper
     protected $scrapeUrl;
 
     /** @var string */
-    protected $clientMethod;
+    protected $requestMethod;
 
     /** @var array */
     protected $clientHeadder = [];
@@ -81,9 +80,9 @@ class Scraper
         return $this;
     }
 
-    public function getMaximumCrawlCount(): ?int
+    public function getMaximumCrawlCount(): int
     {
-        return $this->maximumCrawlCount;
+        return $this->maximumCrawlCount ?? 1;
     }
 
     public function setStartFromPaginationNumber(int $startFromPaginationNumber): Scraper
@@ -91,6 +90,11 @@ class Scraper
         $this->startFromPaginationNumber = $startFromPaginationNumber;
         
         return $this;
+    }
+
+    public function getStartFromPaginationNumber(): int
+    {
+        return $this->startFromPaginationNumber ?? 1;
     }
 
     public function setScraperProfileClass(string $scraperProfileClass): Scraper
@@ -116,12 +120,7 @@ class Scraper
     {
         return $this->navigationType;
     }
-
-    public function getStartFromPaginationNumber(): ?int
-    {
-        return $this->startFromPaginationNumber;
-    }
-
+    
     public function setScrapeUrl(string $scrapeUrl): Scraper
     {
         $this->scrapeUrl = $scrapeUrl;
@@ -136,14 +135,14 @@ class Scraper
 
     public function setRequestMethod(string $requestMethod): Scraper
     {
-        $this->getRequestMethod = $requestMethod;
+        $this->requestMethod = $requestMethod;
 
         return $this;
     }
 
     public function getRequestMethod(): string
     {
-        return $this->getRequestMethod;
+        return $this->requestMethod;
     }
 
     public function setClientBody(array $clientBody): Scraper
@@ -165,53 +164,55 @@ class Scraper
 
     public function fetch()
     {   
-        if ($this->getNavigationType() === 'graphql-cursor') {
+        if ($this->navigationType === 'graphql-cursor') {
             return $this->startScraperWithGraphQLCursor();
         }
         
-        if ($this->getNavigationType() === 'url-pagination') {
-            $this->startScraperWithUrlPagination();
+        if ($this->navigationType === 'url-pagination') {
+            return $this->startScraperWithUrlPagination();
         }
 
-        return $this;
+        return $this->startScraper();
     }
 
-    protected function startScraperWithGraphQLCursor()
-    {
-        return $this->scrapeThroughCrawlCount(function () {            
-            $cursor = new GraphQLCursor;
+    protected function startScraperWithGraphQLCursor(): Generator
+    {        
+        $cursor = new GraphQLCursor;
 
+        return $this->scrapeThroughCrawlCount(function () use ($cursor) {                        
             $body = json_decode($this->client->getConfig()['body'], true);
 
             $body['variables']['cursor'] = $cursor->getNextPageCursor();
 
             $this->response = $this->client->request(
-                $this->getRequestMethod(),
-                $this->getScrapeUrl(), 
+                $this->requestMethod,
+                $this->scrapeUrl, 
                 ['body' => json_encode($body)]
             );
             
-            if (! is_null($this->scraperProfileClass())) {
+            if (! is_null($this->scraperProfileClass())) {                
                 $parsedResponse = (new $this->scraperProfileClass())->parse($this);
 
                 $nextPageCursor = $parsedResponse->getPageInfo()->getEndCursor();
 
                 $cursor->setNextPageCursor($nextPageCursor);
                 
-                yield $parsedResponse;
+                return $parsedResponse;
             }
         });
     }
 
-    protected function startScraperWithUrlPagination()
+    protected function startScraperWithUrlPagination(): Generator
     {
+        return $this->scrapeThroughCrawlCount(function () {                        
+            return [];
+        });
+    }    
 
-    }
-
-    protected function scrapeThroughCrawlCount($callback)
-    {
-        for ($i = $this->startFromPaginationNumber; $i <= $this->maximumCrawlCount; $i++) {
-            return call_user_func($callback);
-        }
+    protected function scrapeThroughCrawlCount($callback): Generator
+    {        
+        for ($i = $this->getStartFromPaginationNumber(); $i <= $this->getMaximumCrawlCount(); $i++) {        
+            yield call_user_func($callback);
+        }        
     }
 }
