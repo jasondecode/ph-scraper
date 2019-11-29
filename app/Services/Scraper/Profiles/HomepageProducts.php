@@ -7,9 +7,28 @@ use App\Services\Scraper\Convert\HomePage as ConvertHomepage;
 
 class HomepageProducts
 {
-    public function parse(Scraper $scraper): HomepageProducts
+    /** App\Services\Scraper\Scraper */
+    protected $scraper;
+
+    public function __construct(Scraper $scraper)
     {
-        $responseContent = $scraper->getResponse()
+        $this->scraper = $scraper;
+    }
+
+    public function getRequestOptions($cursor): array
+    {
+        $body = json_decode($this->scraper->getClient()->getConfig()['body'], true);
+
+        $body['variables']['cursor'] = $cursor->getNextPageCursor();
+        
+        return [
+            'body' => json_encode($body)
+        ];
+    }
+
+    public function parse(): HomepageProducts
+    {
+        $responseContent = $this->scraper->getResponse()
             ->getBody()
             ->getContents();
 

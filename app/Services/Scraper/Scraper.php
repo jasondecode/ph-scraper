@@ -145,13 +145,18 @@ class Scraper
         return $this->requestMethod;
     }
 
+    public function getClient(): Client
+    {
+        return $this->client;
+    }
+
     public function setClientBody(array $clientBody): Scraper
     {
         $this->clientBody = $clientBody;
 
         return $this;
     }
-
+    
     public function getClientBody(): array
     {
         return $this->clientBody;
@@ -179,26 +184,24 @@ class Scraper
     {        
         $cursor = new GraphQLCursor;
 
-        return $this->scrapeThroughCrawlCount(function () use ($cursor) {                        
-            $body = json_decode($this->client->getConfig()['body'], true);
-
-            $body['variables']['cursor'] = $cursor->getNextPageCursor();
-
+        return $this->scrapeThroughCrawlCount(function () use ($cursor) {                                    
+            $scraperProfileClass = $this->scraperProfileClass();
+    
+            $scraperProfile = new $scraperProfileClass($this);
+            
             $this->response = $this->client->request(
                 $this->requestMethod,
                 $this->scrapeUrl, 
-                ['body' => json_encode($body)]
+                $scraperProfile->getRequestOptions($cursor)
             );
             
-            if (! is_null($this->scraperProfileClass())) {                
-                $parsedResponse = (new $this->scraperProfileClass())->parse($this);
+            $parsedResponse = $scraperProfile->parse();
 
-                $nextPageCursor = $parsedResponse->getPageInfo()->getEndCursor();
+            $nextPageCursor = $parsedResponse->getPageInfo()->getEndCursor();
 
-                $cursor->setNextPageCursor($nextPageCursor);
-                
-                return $parsedResponse;
-            }
+            $cursor->setNextPageCursor($nextPageCursor);
+            
+            return $parsedResponse;            
         });
     }
 
