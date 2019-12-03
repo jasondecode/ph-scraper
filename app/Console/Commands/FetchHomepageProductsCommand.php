@@ -20,7 +20,7 @@ class FetchHomepageProductsCommand extends Command
         parent::__construct();
     }
     
-    public function handle(Scraper $scraper)
+    public function handle(Scraper $scraper, Products $products)
     {
         $this->info('fetching homepage..');
 
@@ -29,10 +29,10 @@ class FetchHomepageProductsCommand extends Command
                 'user-agent' => config('scraper.user_agent'),
                 'content-type' => 'application/json'
             ],
-            'body' => (new Products)->getHomepageRequestBody(),
+            'body' => $products->getHomepageRequestBody(),
         ];
 
-        $responses = $scraper::createClient($clientOptions)
+        $scraper::createClient($clientOptions)
             ->setScrapeUrl('https://www.producthunt.com/frontend/graphql')
             ->setRequestMethod('POST')
             ->setScraperProfileClass(HomepageProducts::class)
@@ -41,19 +41,5 @@ class FetchHomepageProductsCommand extends Command
             ->setMaximumDelayBetweenRequests(2000000)
             ->setNavigationType('graphql-cursor')
             ->fetch();   
-        
-        collect($responses)                    
-            ->sortBy('votes')
-            ->each(function ($response) {
-                $this->info('products:');
-
-                dump($response->getProducts());
-
-                $this->info('page info:');
-
-                dump($response->getPageInfo());
-            });
-        
-        $this->info('all done 🔥');
     }
 }

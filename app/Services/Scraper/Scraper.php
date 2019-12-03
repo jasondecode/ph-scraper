@@ -8,7 +8,6 @@ use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\RequestOptions;
 use App\Services\Scraper\Navigation\GraphQLCursor;
-use Generator;
 
 class Scraper
 {   
@@ -206,15 +205,13 @@ class Scraper
         if ($this->navigationType === 'url-pagination') {
             return $this->startScraperWithUrlPagination();
         }
-
-        return $this->startScraper();
     }
 
-    protected function startScraperWithGraphQLCursor(): Generator
+    protected function startScraperWithGraphQLCursor()
     {        
         $graphQLCursor = new GraphQLCursor;
 
-        return $this->scrapeThroughCrawlCount(function () use ($graphQLCursor) {                                    
+        $this->scrapeThroughCrawlCount(function () use ($graphQLCursor) {                                    
             $scraperProfileClass = $this->scraperProfileClass();
     
             $scraperProfile = new $scraperProfileClass($this);
@@ -225,35 +222,34 @@ class Scraper
                 $scraperProfile->getRequestOptions($graphQLCursor)
             );
             
-            $parsedResponse = $scraperProfile->onRequestFulfilled();
+            $scraperProfile->processOnRequestFulfilled();
 
             $nextPageCursor = $scraperProfile->getEndCursor();
 
-            $graphQLCursor->setNextPageCursor($nextPageCursor);
-            
-            return $parsedResponse;            
+            $graphQLCursor->setNextPageCursor($nextPageCursor);                        
         });
     }
 
-    protected function startScraperWithUrlPagination(): Generator
+    protected function startScraperWithUrlPagination()
     {
         return $this->scrapeThroughCrawlCount(function () {                        
             return [];
         });
     }    
 
-    protected function scrapeThroughCrawlCount($callback): Generator
+    protected function scrapeThroughCrawlCount($callback)
     {        
         for ($i = $this->getStartFromPaginationNumber(); $i <= $this->getMaximumCrawlCount(); $i++) {   
-            $response = call_user_func($callback);
+            call_user_func($callback);
                         
             if ($i > 1) {
-                $delayBetweenRequests = rand($this->minimumDelayBetweenRequests, $this->maximumDelayBetweenRequests);
+                $delayBetweenRequests = rand(
+                    $this->getMinimumDelayBetweenRequests(), 
+                    $this->getMaximumDelayBetweenRequests()
+                );
 
                 usleep($delayBetweenRequests);
             }
-
-            yield $response;
         }        
     }
 }
