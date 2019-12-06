@@ -8,6 +8,7 @@ use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\RequestOptions;
 use App\Services\Scraper\Navigation\GraphQLCursor;
+use Closure;
 
 class Scraper
 {   
@@ -97,9 +98,9 @@ class Scraper
         return $this;
     }
 
-    public function getStartFromPaginationNumber(): int
+    public function getStartFromPaginationNumber(): ?int
     {
-        return $this->startFromPaginationNumber ?? 1;
+        return $this->startFromPaginationNumber;
     }
 
     public function setMinimumDelayBetweenRequests(int $minimumDelayBetweenRequests): Scraper
@@ -199,11 +200,11 @@ class Scraper
     public function fetch()
     {   
         if ($this->navigationType === 'graphql-cursor') {
-            return $this->startScraperWithGraphQLCursor();
+            $this->startScraperWithGraphQLCursor();
         }
         
         if ($this->navigationType === 'url-pagination') {
-            return $this->startScraperWithUrlPagination();
+            $this->startScraperWithUrlPagination();
         }
     }
 
@@ -237,12 +238,16 @@ class Scraper
         });
     }    
 
-    protected function scrapeThroughCrawlCount($callback)
+    protected function scrapeThroughCrawlCount(Closure $callback)
     {        
-        for ($i = $this->getStartFromPaginationNumber(); $i <= $this->getMaximumCrawlCount(); $i++) {   
-            call_user_func($callback);
-                        
-            if ($i > 1) {
+        for ($requestCount = 1; $requestCount <= $this->getMaximumCrawlCount(); $requestCount++) {                           
+            try {
+                call_user_func($callback);
+            } catch (\Exeception $e) {
+                                
+            }
+
+            if ($requestCount > 1) {
                 $delayBetweenRequests = rand(
                     $this->getMinimumDelayBetweenRequests(), 
                     $this->getMaximumDelayBetweenRequests()

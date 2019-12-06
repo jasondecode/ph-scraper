@@ -4,16 +4,16 @@ namespace App\Services\Scraper\Navigation;
 class GraphQLCursor
 {   
     /** @var string */
-    protected $nextPageCursor = '';
+    protected $pageCursor = '';
 
-    public function getNextPageCursor(): string
+    public function getPageCursor(): string
     {
-        return $this->nextPageCursor;
+        return $this->pageCursor;
     }
 
     public function setNextPageCursor(string $nextPageCursor): GraphQLCursor
     {
-        $this->nextPageCursor = $nextPageCursor;
+        $this->pageCursor = $nextPageCursor;
 
         return $this;
     }
