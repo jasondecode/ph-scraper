@@ -1,5 +1,5 @@
 <?php
-namespace App\Services\Scraper\Convert;
+namespace App\Services\ProductHunt\Convert;
 
 class Homepage
 {

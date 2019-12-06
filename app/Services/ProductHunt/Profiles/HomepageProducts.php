@@ -1,14 +1,14 @@
 <?php
-namespace App\Services\Scraper\Profiles;
+namespace App\Services\ProductHunt\Profiles;
 
-use App\Services\Scraper\Scraper;
-use App\Services\Scraper\Navigation\GraphQLCursor;
-use App\Services\Scraper\Convert\Products as ConvertProducts;
-use App\Services\Scraper\Convert\HomePage as ConvertHomepage;
+use App\Services\ProductHunt\Scraper;
+use App\Services\ProductHunt\Navigation\GraphQLCursor;
+use App\Services\ProductHunt\Convert\Products as ConvertProducts;
+use App\Services\ProductHunt\Convert\HomePage as ConvertHomepage;
 
 class HomepageProducts extends Profiles
 {
-    /** @var App\Services\Scraper\Scraper */
+    /** @var App\Services\ProductHunt\Scraper */
     protected $scraper;
 
     public function __construct(Scraper $scraper)
@@ -50,16 +50,6 @@ class HomepageProducts extends Profiles
         return $this;
     }
 
-    public function getProducts(): array
-    {
-        return $this->products;
-    }
-
-    public function getPageInfo(): ConvertHomePage
-    {
-        return $this->pageInfo;
-    }
-
     public function getEndCursor(): string
     {
         return $this->pageInfo->getEndCursor();
@@ -69,10 +59,28 @@ class HomepageProducts extends Profiles
     {
         $body = json_decode($this->scraper->getClient()->getConfig()['body'], true);
 
-        $body['variables']['cursor'] = $graphQLCursor->getNextPageCursor();
+        $body['variables']['cursor'] = $this->getCursor($graphQLCursor);
         
         return [
             'body' => json_encode($body)
         ];
+    }
+
+    protected function getCursor(GraphQLCursor $graphQLCursor): string
+    {        
+        $startFromPaginationNumber = $this->scraper->getStartFromPaginationNumber();
+        
+        if ($this->scraper->getRequestCount() === 1 && ! is_null($startFromPaginationNumber)) {
+            $cursor = Navigation::where([
+                'type' => 'graphql-cursor',                
+                'number' => $startFromPaginationNumber
+            ])->first();
+
+            if (! is_null($cursor)) {
+                return $cursor->getCode();
+            }
+        }
+
+        return $graphQLCursor->getPageCursor();
     }
 }

@@ -1,5 +1,5 @@
 <?php
-namespace App\Services\Scraper\Profiles;
+namespace App\Services\ProductHunt\Profiles;
 
 use Symfony\Component\Console\Output\ConsoleOutput;
 

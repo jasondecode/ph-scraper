@@ -1,7 +1,7 @@
 <?php
-namespace App\Services\Scraper\Convert;
+namespace App\Services\ProductHunt\Convert;
 
-use App\Services\Scraper\Convert\Product;
+use App\Services\ProductHunt\Convert\Product;
 
 class Products
 {

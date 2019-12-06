@@ -4,8 +4,8 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Services\Scraper\Scraper;
-use App\Services\Scraper\Profiles\HomepageProducts;
-use App\Services\Scraper\Models\Products;
+use App\Services\ProductHunt\Profiles\HomepageProducts;
+use App\Services\ProductHunt\Models\Products;
 
 class FetchHomepageProductsCommand extends Command
 {
@@ -33,6 +33,7 @@ class FetchHomepageProductsCommand extends Command
         ];
 
         $scraper::createClient($clientOptions)
+            ->setSource('homepage-products')
             ->setScrapeUrl('https://www.producthunt.com/frontend/graphql')
             ->setRequestMethod('POST')
             ->setScraperProfileClass(HomepageProducts::class)
