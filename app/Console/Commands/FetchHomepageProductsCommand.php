@@ -41,6 +41,6 @@ class FetchHomepageProductsCommand extends Command
             ->setMinimumDelayBetweenRequests(1000000)
             ->setMaximumDelayBetweenRequests(2000000)
             ->setNavigationType('graphql-cursor')
-            ->fetch();   
+            ->run();   
     }
 }

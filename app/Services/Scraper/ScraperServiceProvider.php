@@ -2,8 +2,11 @@
 
 namespace App\Services\Scraper;
 
+use App\Services\Scraper\Core\LogEntries;
+use App\Services\Scraper\Models\LogEntriesScraper as LogEntriesScraperModel;
 use Illuminate\Support\ServiceProvider;
 use App\Services\Scraper\Utilities\Output;
+
 
 class ScraperServiceProvider extends ServiceProvider
 {
@@ -11,7 +14,8 @@ class ScraperServiceProvider extends ServiceProvider
     {
         $this->app->singleton(Scraper::class, function () {                
             return new Scraper(                
-                new Output()                
+                new Output(),
+                new LogEntries(new LogEntriesScraperModel)
             );
         });
     }

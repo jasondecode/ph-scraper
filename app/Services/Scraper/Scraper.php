@@ -9,6 +9,7 @@ use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\RequestOptions;
 use App\Services\Scraper\Navigation\GraphQLCursor;
 use App\Services\Scraper\Utilities\Output;
+use App\Services\Scraper\Core\LogEntries;
 
 class Scraper
 {   
@@ -57,9 +58,11 @@ class Scraper
     /** @var GuzzleHttp\Psr7\Response */
     protected $response;
 
-    public function __construct(Output $output)
+    public function __construct(Output $output, LogEntries $logEntries)
     {                   
         $this->output = $output;
+
+        $this->logEntries = $logEntries;
     }
 
     public function createClient(array $clientOptions): Scraper
@@ -230,15 +233,27 @@ class Scraper
         return $this->response;
     }
 
-    public function fetch()
+    public function run()
     {   
-        if ($this->navigationType === 'graphql-cursor') {
-            $this->startScraperWithGraphQLCursor();
-        }
-        
-        if ($this->navigationType === 'url-pagination') {
-            $this->startScraperWithUrlPagination();
-        }
+        $this->output->info('Running scraper..');
+
+        if (! $this->logEntries->isRunning($this->source)) {
+            $this->logEntries->create($this);
+                
+            if ($this->navigationType === 'graphql-cursor') {
+                $this->startScraperWithGraphQLCursor();
+            }
+            
+            if ($this->navigationType === 'url-pagination') {
+                $this->startScraperWithUrlPagination();
+            }
+
+            $this->logEntries->setRunAtIsFinished();
+
+            $this->output->info('Running scraper completed ');
+        } else {
+            $this->output->error("Current source: {$this->source} is already running");
+        }        
     }
 
     protected function startScraperWithGraphQLCursor()
