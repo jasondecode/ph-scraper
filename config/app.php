@@ -175,7 +175,7 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Services\Scraper\ScraperServiceProvider::class,
-        App\Services\Scraper\ProductHuntServiceProvider::class        
+        App\Services\ProductHunt\ProductHuntServiceProvider::class        
     ],
 
     /*

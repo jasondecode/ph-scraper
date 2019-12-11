@@ -1,19 +1,28 @@
 <?php
 namespace App\Services\Scraper;
 
-use App\Services\Scraper\Http\GuzzleClient;
+use Closure;
 use GuzzleHttp\Client;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\RequestOptions;
 use App\Services\Scraper\Navigation\GraphQLCursor;
-use Closure;
+use App\Services\Scraper\Utilities\Output;
 
 class Scraper
 {   
+    /** @var App\Services\Scraper\Utilities\Output */
+    public $output;
+
+    /** @var string */
+    protected $source;
+
     /** @var int|null */
     protected $maximumCrawlCount = null;
+
+    /** @var int|null */
+    protected $requestCount = null;
 
     /** @var int|null */
     protected $startFromPaginationNumber = null;
@@ -48,9 +57,14 @@ class Scraper
     /** @var GuzzleHttp\Psr7\Response */
     protected $response;
 
-    public static function createClient(array $clientOptions): Scraper
+    public function __construct(Output $output)
+    {                   
+        $this->output = $output;
+    }
+
+    public function createClient(array $clientOptions): Scraper
     {   
-        $client = new Client([
+        $this->client = new Client([
             RequestOptions::COOKIES => true,
             RequestOptions::CONNECT_TIMEOUT => 10,
             RequestOptions::TIMEOUT => 10,
@@ -59,12 +73,7 @@ class Scraper
             RequestOptions::BODY => $clientOptions['body']
         ]);
 
-        return new self($client);
-    }
-
-    public function __construct(Client $client)
-    {
-        $this->client = $client;   
+        return $this;
     }
 
     public function setClientHeaders(array $clientHeaders): Scraper
@@ -79,6 +88,18 @@ class Scraper
         return $this->clientHeadder;
     }
 
+    public function setSource(string $source): Scraper
+    {
+        $this->source = $source;
+
+        return $this;
+    }
+
+    public function getSource(): string
+    {
+        return $this->source;
+    }
+
     public function setMaximumCrawlCount(int $maximumCrawlCount): Scraper
     {
         $this->maximumCrawlCount = $maximumCrawlCount;
@@ -91,6 +112,18 @@ class Scraper
         return $this->maximumCrawlCount ?? 1;
     }
 
+    public function setRequestCount(int $requestCount): Scraper
+    {
+        $this->requestCount = $requestCount;
+
+        return $this;
+    }
+
+    public function getRequestCount(): int
+    {
+        return $this->requestCount ?? 0;
+    }
+    
     public function setStartFromPaginationNumber(int $startFromPaginationNumber): Scraper
     {
         $this->startFromPaginationNumber = $startFromPaginationNumber;
@@ -240,7 +273,9 @@ class Scraper
 
     protected function scrapeThroughCrawlCount(Closure $callback)
     {        
-        for ($requestCount = 1; $requestCount <= $this->getMaximumCrawlCount(); $requestCount++) {                           
+        for ($requestCount = 1; $requestCount <= $this->getMaximumCrawlCount(); $requestCount++) {                                      
+            $this->setRequestCount($requestCount);
+
             try {
                 call_user_func($callback);
             } catch (\Exeception $e) {

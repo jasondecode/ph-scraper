@@ -31,8 +31,8 @@ class FetchHomepageProductsCommand extends Command
             ],
             'body' => $products->getHomepageRequestBody(),
         ];
-
-        $scraper::createClient($clientOptions)
+        
+        $scraper->createClient($clientOptions)
             ->setSource('homepage-products')
             ->setScrapeUrl('https://www.producthunt.com/frontend/graphql')
             ->setRequestMethod('POST')
