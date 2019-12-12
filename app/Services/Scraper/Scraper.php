@@ -252,7 +252,7 @@ class Scraper
 
             $this->output->info('Running scraper completed ');
         } else {
-            $this->output->error("Current source: {$this->source} is already running");
+            $this->output->error("Source: {$this->source} is already running");
         }        
     }
 
@@ -293,8 +293,10 @@ class Scraper
 
             try {
                 call_user_func($callback);
-            } catch (\Exeception $e) {
-                                
+            } catch (\Exception $e) {
+                $this->output->error($e->getMessage());
+                
+                $this->logEntries->setError($e->getMessage());
             }
 
             if ($requestCount > 1) {

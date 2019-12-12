@@ -32,11 +32,11 @@ class HomepageProducts
             $sections['pageInfo']
         );
         
-        $this->scraper->output->error('products:');
+        $this->scraper->output->info('products:');
 
         collect($this->products)->sortByDesc('votes')->dump();
         
-        $this->scraper->output->warning('page info:');
+        $this->scraper->output->info('page info:');
 
         dump($this->pageInfo);
 
