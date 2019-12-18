@@ -322,27 +322,27 @@ class Scraper
     
     protected function scrapeThroughCrawlCount(Closure $callback)
     {        
-        for ($requestCount = 1; $requestCount <= $this->getMaximumCrawlCount(); $requestCount++) {                                      
-            $this->setRequestCount($requestCount);
-
-            $this->setCurrentRequestedPageNumber($requestCount);
-
-            try {
+        try {
+            for ($requestCount = 1; $requestCount <= $this->getMaximumCrawlCount(); $requestCount++) {                                      
+                $this->setRequestCount($requestCount);
+    
+                $this->setCurrentRequestedPageNumber($requestCount);
+    
                 call_user_func($callback);                
-            } catch (\Exception $e) {
-                $this->output->error($e->getMessage());
+    
+                if ($requestCount > 1) {
+                    $delayBetweenRequests = rand(
+                        $this->getMinimumDelayBetweenRequests(), 
+                        $this->getMaximumDelayBetweenRequests()
+                    );
+    
+                    usleep($delayBetweenRequests);
+                }
+            }   
+        } catch (\Exception $e) {
+            $this->output->error($e->getMessage());
                 
-                $this->logEntries->setError($e->getMessage());
-            }
-
-            if ($requestCount > 1) {
-                $delayBetweenRequests = rand(
-                    $this->getMinimumDelayBetweenRequests(), 
-                    $this->getMaximumDelayBetweenRequests()
-                );
-
-                usleep($delayBetweenRequests);
-            }
+            $this->logEntries->setError($e->getMessage());
         }        
     }       
 }

@@ -40,7 +40,7 @@ class FetchHomepageProductsCommand extends Command
             ->setScraperProfileClass(HomepageProducts::class)            
             ->setNavigationType(Navigation::TYPE_GRAPHQL_CURSOR)
             ->setMaximumCrawlCount(10)
-            // ->setStartFromPaginationNumber(7)
+            // ->setStartFromPaginationNumber(97)
             ->setMinimumDelayBetweenRequests(1000000)
             ->setMaximumDelayBetweenRequests(2000000)
             ->run();   

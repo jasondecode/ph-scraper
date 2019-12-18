@@ -28,9 +28,9 @@ class GraphQLCursor
             ])
             ->orderBy('id', 'desc')
             ->first();
-                          
-            if (! is_null($cursor)) {
-                return $cursor->code;
+                   
+            if (is_null($cursor)) {
+                throw new \Exception("Cannot find cursor for page number: {$startFromPaginationNumber}");
             }
         }
         
