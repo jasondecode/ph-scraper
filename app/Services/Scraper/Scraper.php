@@ -240,7 +240,7 @@ class Scraper
     protected function setCurrentRequestedPageNumber(int $requestCount): Scraper
     {   
         if (! is_null($this->startFromPaginationNumber)) {
-            $this->currentRequestedPageNumber = ($this->startFromPaginationNumber + $requestCount) - 1;
+            $this->currentRequestedPageNumber = $this->startFromPaginationNumber + $requestCount;
         } else {
             $this->currentRequestedPageNumber = $requestCount;
         }
@@ -294,10 +294,10 @@ class Scraper
             $scraperProfile->processOnRequestFulfilled();
 
             $nextPageCursor = $scraperProfile->getEndCursor();
-            
-            $graphQLCursor->saveNextPageCursor($this);
-
+                        
             $graphQLCursor->setNextPageCursor($nextPageCursor);                                    
+
+            $graphQLCursor->saveNextPageCursor($this);
         });
     }
 

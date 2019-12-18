@@ -25,7 +25,9 @@ class GraphQLCursor
                 ['type', Navigation::TYPE_GRAPHQL_CURSOR],
                 ['source', $scraper->getSource()],
                 ['page_number', $startFromPaginationNumber]
-            ])->first();
+            ])
+            ->orderBy('id', 'desc')
+            ->first();
                           
             if (! is_null($cursor)) {
                 return $cursor->code;
