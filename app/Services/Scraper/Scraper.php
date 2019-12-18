@@ -7,7 +7,7 @@ use GuzzleHttp\Pool;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\RequestOptions;
-use App\Services\Scraper\Navigation\Navigation;
+use App\Services\Scraper\Models\Navigation;
 use App\Services\Scraper\Navigation\GraphQLCursor;
 use App\Services\Scraper\Utilities\Output;
 use App\Services\Scraper\Core\LogEntries;
@@ -58,6 +58,9 @@ class Scraper
 
     /** @var GuzzleHttp\Psr7\Response */
     protected $response;
+
+    /** @var int|null */
+    protected $currentRequestedPageNumber = null;
 
     public function __construct(Output $output, LogEntries $logEntries)
     {                   
@@ -234,6 +237,22 @@ class Scraper
         return $this->response;
     }
 
+    protected function setCurrentRequestedPageNumber(int $requestCount): Scraper
+    {   
+        if (! is_null($this->startFromPaginationNumber)) {
+            $this->currentRequestedPageNumber = ($this->startFromPaginationNumber + $requestCount) - 1;
+        } else {
+            $this->currentRequestedPageNumber = $requestCount;
+        }
+        
+        return $this;
+    }
+
+    public function getCurrentRequestedPageNumber(): int
+    {
+        return $this->currentRequestedPageNumber;
+    }
+
     public function run()
     {   
         $this->output->info('Running scraper..');
@@ -275,8 +294,10 @@ class Scraper
             $scraperProfile->processOnRequestFulfilled();
 
             $nextPageCursor = $scraperProfile->getEndCursor();
+            
+            $graphQLCursor->saveNextPageCursor($this);
 
-            $graphQLCursor->setNextPageCursor($nextPageCursor);                        
+            $graphQLCursor->setNextPageCursor($nextPageCursor);                                    
         });
     }
 
@@ -304,6 +325,8 @@ class Scraper
         for ($requestCount = 1; $requestCount <= $this->getMaximumCrawlCount(); $requestCount++) {                                      
             $this->setRequestCount($requestCount);
 
+            $this->setCurrentRequestedPageNumber($requestCount);
+
             try {
                 call_user_func($callback);                
             } catch (\Exception $e) {
@@ -321,5 +344,5 @@ class Scraper
                 usleep($delayBetweenRequests);
             }
         }        
-    }
+    }       
 }

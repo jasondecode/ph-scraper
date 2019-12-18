@@ -6,7 +6,7 @@ use Illuminate\Console\Command;
 use App\Services\Scraper\Scraper;
 use App\Services\ProductHunt\Profiles\HomepageProducts;
 use App\Services\ProductHunt\Models\Products;
-use App\Services\Scraper\Navigation\Navigation;
+use App\Services\Scraper\Models\Navigation;
 
 class FetchHomepageProductsCommand extends Command
 {
@@ -39,7 +39,8 @@ class FetchHomepageProductsCommand extends Command
             ->setRequestMethod('POST')
             ->setScraperProfileClass(HomepageProducts::class)            
             ->setNavigationType(Navigation::TYPE_GRAPHQL_CURSOR)
-            ->setMaximumCrawlCount(2)
+            ->setMaximumCrawlCount(10)
+            ->setStartFromPaginationNumber(7)
             ->setMinimumDelayBetweenRequests(1000000)
             ->setMaximumDelayBetweenRequests(2000000)
             ->run();   

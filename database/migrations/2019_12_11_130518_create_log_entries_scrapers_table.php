@@ -20,7 +20,7 @@ class CreateLogEntriesScrapersTable extends Migration
 
             $table->longText('error')->nullable();
 
-            $table->text('source');            
+            $table->string('source');            
 
             $table->dateTime('runned_at')->nullable()->default(null);
 
