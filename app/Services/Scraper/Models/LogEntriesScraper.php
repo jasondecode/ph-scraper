@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class LogEntriesScraper extends Model
 {
+    protected $fillable = ['is_running', 'error', 'source', 'runned_at', 'completed_at'];
+
     public function isRunning(string $source): bool
     {
         $entries = $this->where([

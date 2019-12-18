@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Console\Components\ProductHunt;
 
 use Illuminate\Console\Command;
 use App\Services\Scraper\Scraper;
@@ -11,7 +11,7 @@ use App\Services\Scraper\Models\Navigation;
 class FetchHomepageProductsCommand extends Command
 {
     /** @var string*/
-    protected $signature = 'product:fetch-homepage';
+    protected $signature = 'producthunt:fetch-homepage';
 
     /** @var string */
     protected $description = 'Fetch homepage products';
