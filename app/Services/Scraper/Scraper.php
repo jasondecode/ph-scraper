@@ -7,6 +7,7 @@ use GuzzleHttp\Pool;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\RequestOptions;
+use App\Services\Scraper\Navigation\Navigation;
 use App\Services\Scraper\Navigation\GraphQLCursor;
 use App\Services\Scraper\Utilities\Output;
 use App\Services\Scraper\Core\LogEntries;
@@ -52,7 +53,7 @@ class Scraper
     /** @var string|null */
     protected $scraperProfileClass = null;
 
-    /** @var string */
+    /** @var int */
     protected $navigationType;
 
     /** @var GuzzleHttp\Psr7\Response */
@@ -175,14 +176,14 @@ class Scraper
         return $this->scraperProfileClass;
     }
 
-    public function setNavigationType(string $navigationType): Scraper
+    public function setNavigationType(int $navigationType): Scraper
     {
         $this->navigationType = $navigationType;
 
         return $this;
     }
 
-    public function getNavigationType(): string
+    public function getNavigationType(): int
     {
         return $this->navigationType;
     }
@@ -240,17 +241,17 @@ class Scraper
         if (! $this->logEntries->isRunning($this->source)) {
             $this->logEntries->create($this);
                 
-            if ($this->navigationType === 'graphql-cursor') {
+            if ($this->navigationType === Navigation::TYPE_GRAPHQL_CURSOR) {
                 $this->startScraperWithGraphQLCursor();
             }
             
-            if ($this->navigationType === 'url-pagination') {
+            if ($this->navigationType === Navigation::TYPE_URL_PAGINATION) {
                 $this->startScraperWithUrlPagination();
             }
 
-            $this->logEntries->setRunAtIsFinished();
+            $this->logEntries->setIsFinished();
 
-            $this->output->info('Running scraper completed ');
+            $this->output->info('Running scraper completed');
         } else {
             $this->output->error("Source: {$this->source} is already running");
         }        
@@ -286,13 +287,25 @@ class Scraper
         });
     }    
 
+    protected function continueFromLastSavedNavigation(): Scraper
+    {
+        $this->startFromPaginationNumber = null;
+        
+        return $this;
+    }
+
+    protected function scrapeThroughUrlCrawlQueue(Closure $callback)
+    {
+
+    }
+    
     protected function scrapeThroughCrawlCount(Closure $callback)
     {        
         for ($requestCount = 1; $requestCount <= $this->getMaximumCrawlCount(); $requestCount++) {                                      
             $this->setRequestCount($requestCount);
 
             try {
-                call_user_func($callback);
+                call_user_func($callback);                
             } catch (\Exception $e) {
                 $this->output->error($e->getMessage());
                 

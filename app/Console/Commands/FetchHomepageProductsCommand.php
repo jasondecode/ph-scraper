@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use App\Services\Scraper\Scraper;
 use App\Services\ProductHunt\Profiles\HomepageProducts;
 use App\Services\ProductHunt\Models\Products;
+use App\Services\Scraper\Navigation\Navigation;
 
 class FetchHomepageProductsCommand extends Command
 {
@@ -36,11 +37,11 @@ class FetchHomepageProductsCommand extends Command
             ->setSource('homepage-products')
             ->setScrapeUrl('https://www.producthunt.com/frontend/graphql')
             ->setRequestMethod('POST')
-            ->setScraperProfileClass(HomepageProducts::class)
+            ->setScraperProfileClass(HomepageProducts::class)            
+            ->setNavigationType(Navigation::TYPE_GRAPHQL_CURSOR)
             ->setMaximumCrawlCount(2)
             ->setMinimumDelayBetweenRequests(1000000)
             ->setMaximumDelayBetweenRequests(2000000)
-            ->setNavigationType('graphql-cursor')
             ->run();   
     }
 }

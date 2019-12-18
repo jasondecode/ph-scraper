@@ -26,16 +26,18 @@ class LogEntries
         
         $this->logEntriesModel->source = $scraper->getSource();
 
-        $this->logEntriesModel->run_at = date('Y-m-d h:i:s');
+        $this->logEntriesModel->runned_at = date('Y-m-d h:i:s');
 
         $this->logEntriesModel->save();
 
         return $this;
     }
 
-    public function setRunAtIsFinished(): LogEntries
+    public function setIsFinished(): LogEntries
     {
         $this->logEntriesModel->is_running = false;
+
+        $this->logEntriesModel->completed_at = date('Y-m-d h:i:s');
         
         $this->logEntriesModel->save();
 

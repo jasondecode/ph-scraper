@@ -15,10 +15,17 @@ class CreateLogEntriesScrapersTable extends Migration
     {
         Schema::create('log_entries_scrapers', function (Blueprint $table) {
             $table->bigIncrements('id');
+
             $table->boolean('is_running')->default(false);
+
             $table->longText('error')->nullable();
+
             $table->text('source');            
-            $table->dateTime('run_at');
+
+            $table->dateTime('runned_at')->nullable()->default(null);
+
+            $table->dateTime('completed_at')->nullable()->default(null);
+            
             $table->timestamps();
         });
     }
