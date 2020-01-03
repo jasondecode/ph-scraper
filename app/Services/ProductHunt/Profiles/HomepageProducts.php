@@ -3,7 +3,8 @@ namespace App\Services\ProductHunt\Profiles;
 
 use App\Services\Scraper\Scraper;
 use App\Services\Scraper\Navigation\GraphQLCursor;
-use App\Services\Scraper\Models\Navigation;
+use App\Services\Scraper\Models\Entity;
+use App\Services\ProductHunt\Models\EntityProduct;
 use App\Services\ProductHunt\Convert\Products as ConvertProducts;
 use App\Services\ProductHunt\Convert\HomePage as ConvertHomepage;
 
@@ -19,9 +20,7 @@ class HomepageProducts
 
     public function processOnRequestFulfilled(): HomepageProducts
     {        
-        $responseContent = $this->scraper->getResponse()
-            ->getBody()
-            ->getContents();
+        $responseContent = $this->scraper->getResponse()->getBody()->getContents();
 
         $sections = json_decode($responseContent, true)['data']['sections'];
 
@@ -35,7 +34,19 @@ class HomepageProducts
         
         $this->scraper->output->info('products:');
 
-        collect($this->products)->sortByDesc('votes')->dump();
+        $entityProduct = new EntityProduct;
+        
+        collect($this->products)->each(function ($product) use ($entityProduct) {            
+            $entity = new Entity([
+                'entity_unique_code' => $product->getId(),
+                'source' => $this->scraper->getSource(),
+                'entityable_id' => $product->getId()                
+            ]); 
+            
+            $entity->save();
+
+            $entityProduct->entity()->save($entity);            
+        });
         
         $this->scraper->output->info('page info:');
 
@@ -56,7 +67,9 @@ class HomepageProducts
 
     public function getRequestOptions(GraphQLCursor $graphQLCursor): array
     {
-        $body = json_decode($this->scraper->getClient()->getConfig()['body'], true);
+        $configBody = $this->scraper->getClient()->getConfig()['body'];
+
+        $body = json_decode($configBody, true);
         
         $body['variables']['cursor'] = $graphQLCursor->getCursor($this->scraper);
         
