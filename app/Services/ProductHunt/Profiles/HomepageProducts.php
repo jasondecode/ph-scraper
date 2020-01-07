@@ -24,33 +24,32 @@ class HomepageProducts
 
         $sections = json_decode($responseContent, true)['data']['sections'];
 
-        $this->products = ConvertProducts::fromArray(
+        $products = ConvertProducts::fromArray(
             $sections['edges'][0]['node']['posts']['edges']
         )->getProducts();
 
-        $this->pageInfo = ConvertHomepage::fromArray(
+        $pageInfo = ConvertHomepage::fromArray(
             $sections['pageInfo']
         );
         
         $this->scraper->output->info('products:');
-
-        $entityProduct = new EntityProduct;
-        
-        collect($this->products)->each(function ($product) use ($entityProduct) {            
-            $entity = new Entity([
-                'entity_unique_code' => $product->getId(),
-                'source' => $this->scraper->getSource(),
-                'entityable_id' => $product->getId()                
+                
+        collect($products)->each(function ($product) {     
+            $entityProduct = new EntityProduct([
+                'votes' => $product->getVotes(),
+                'name' => $product->getName()
             ]); 
-            
-            $entity->save();
 
-            $entityProduct->entity()->save($entity);            
-        });
+            $entityProduct->save()->entity()->save(new Entity([
+                'entity_unique_code' => $product->getId(),
+                'source' => $this->scraper->getSource()
+            ]));            
+        })
+        ->dump();
         
         $this->scraper->output->info('page info:');
 
-        dump($this->pageInfo);
+        dump($pageInfo);
 
         return $this;        
     }
