@@ -20,6 +20,8 @@ class CreateEntitiesTable extends Migration
 
             $table->string('source');
 
+            $table->string('mode');
+
             $table->morphs('entityable');
 
             $table->timestamps();

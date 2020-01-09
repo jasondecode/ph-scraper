@@ -28,28 +28,29 @@ class HomepageProducts
             $sections['edges'][0]['node']['posts']['edges']
         )->getProducts();
 
-        $pageInfo = ConvertHomepage::fromArray(
+        $this->pageInfo = ConvertHomepage::fromArray(
             $sections['pageInfo']
         );
         
         $this->scraper->output->info('products:');
-                
-        collect($products)->each(function ($product) {     
-            $entityProduct = new EntityProduct([
+        
+        $entity = new Entity;
+
+        collect($products)->each(function ($product) use ($entity) {            
+            $entity->createOrUpdate([
+                'entity_unique_code' => $product->getId(),
+                'entityable_type' => EntityProduct::class,
+                'source' => $this->scraper->getSource()
+            ], [
                 'votes' => $product->getVotes(),
                 'name' => $product->getName()
-            ]); 
-
-            $entityProduct->save()->entity()->save(new Entity([
-                'entity_unique_code' => $product->getId(),
-                'source' => $this->scraper->getSource()
-            ]));            
+            ]);                                   
         })
         ->dump();
         
         $this->scraper->output->info('page info:');
 
-        dump($pageInfo);
+        dump($this->pageInfo);
 
         return $this;        
     }
