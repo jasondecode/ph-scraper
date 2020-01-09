@@ -21,36 +21,36 @@ class Entity extends Model
         return $this->morphTo();
     }
 
-    public function createOrUpdate($find, $profileAttributes): Entity
+    public function createOrUpdate($find, $entityAttributes, $entityProfileAttributes): Entity
     {
         $entity = $this->where($find)->orderBy('id', 'desc')->first();
 
         $entityProfileClass = $find['entityable_type'];
 
         if (! is_null($entity)) {
-            $entity->entityable->fill($profileAttributes);
+            $entity->entityable->fill($entityProfileAttributes);
         
             if ($entity->entityable->isDirty()) {
-                $entityAttributes = array_merge($find, [
+                $entityAttributes = array_merge($find, $entityAttributes, [
                     'mode' => self::MODE_UPDATE
                 ]);
 
-                $this->saveEntity($profileAttributes, $entityAttributes, $entityProfileClass);
+                $this->saveEntity($entityProfileAttributes, $entityAttributes, $entityProfileClass);
             }             
         } else {            
-            $entityAttributes = array_merge($find, [
+            $entityAttributes = array_merge($find, $entityAttributes, [
                 'mode' => self::MODE_CREATE
             ]);            
 
-            $this->saveEntity($profileAttributes, $entityAttributes, $entityProfileClass);
+            $this->saveEntity($entityProfileAttributes, $entityAttributes, $entityProfileClass);
         }
 
         return $this;
     }
 
-    protected function saveEntity($profileAttributes, $entityAttributes, $entityProfileClass): Entity
+    protected function saveEntity($entityProfileAttributes, $entityAttributes, $entityProfileClass): Entity
     {                   
-        $entityProduct = new $entityProfileClass($profileAttributes);
+        $entityProduct = new $entityProfileClass($entityProfileAttributes);
 
         $entityProduct->save();
         

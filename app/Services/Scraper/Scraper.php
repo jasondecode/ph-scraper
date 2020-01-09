@@ -11,11 +11,15 @@ use App\Services\Scraper\Models\Navigation;
 use App\Services\Scraper\Navigation\GraphQLCursor;
 use App\Services\Scraper\Utilities\Output;
 use App\Services\Scraper\Core\LogEntries;
+use App\Services\Scraper\Models\Entity;
 
 class Scraper
 {   
     /** @var App\Services\Scraper\Utilities\Output */
     public $output;
+
+    /** @var App\Services\Scraper\Core\LogEntries */
+    public $logEntries;
 
     /** @var string */
     protected $source;
@@ -283,7 +287,7 @@ class Scraper
         $this->scrapeThroughCrawlCount(function () use ($graphQLCursor) {                                    
             $scraperProfileClass = $this->scraperProfileClass();
     
-            $scraperProfile = new $scraperProfileClass($this);
+            $scraperProfile = new $scraperProfileClass($this, new Entity);
             
             $this->response = $this->client->request(
                 $this->requestMethod,

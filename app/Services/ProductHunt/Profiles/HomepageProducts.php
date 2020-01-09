@@ -3,19 +3,24 @@ namespace App\Services\ProductHunt\Profiles;
 
 use App\Services\Scraper\Scraper;
 use App\Services\Scraper\Navigation\GraphQLCursor;
-use App\Services\Scraper\Models\Entity;
 use App\Services\ProductHunt\Models\EntityProduct;
 use App\Services\ProductHunt\Convert\Products as ConvertProducts;
 use App\Services\ProductHunt\Convert\HomePage as ConvertHomepage;
+use App\Services\Scraper\Models\Entity;
 
 class HomepageProducts
 {
     /** @var App\Services\Scraper\Scraper */
     protected $scraper;
 
-    public function __construct(Scraper $scraper)
+    /** @var App\Services\Scraper\Models\Entity */
+    protected $entity;
+
+    public function __construct(Scraper $scraper, Entity $entity)
     {                        
-        $this->scraper = $scraper;                 
+        $this->scraper = $scraper;      
+        
+        $this->entity = $entity;
     }
 
     public function processOnRequestFulfilled(): HomepageProducts
@@ -34,12 +39,11 @@ class HomepageProducts
         
         $this->scraper->output->info('products:');
         
-        $entity = new Entity;
-
-        collect($products)->each(function ($product) use ($entity) {            
-            $entity->createOrUpdate([
+        collect($products)->each(function ($product)  {            
+            $this->entity->createOrUpdate([
                 'entity_unique_code' => $product->getId(),
                 'entityable_type' => EntityProduct::class,
+            ], [
                 'source' => $this->scraper->getSource()
             ], [
                 'votes' => $product->getVotes(),
