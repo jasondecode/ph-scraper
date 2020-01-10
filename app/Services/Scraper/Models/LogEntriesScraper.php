@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class LogEntriesScraper extends Model
 {
-    protected $fillable = ['is_running', 'error', 'source', 'runned_at', 'completed_at'];
+    protected $fillable = ['is_running', 'error', 'source', 'runned_at', 'completed_at', 'start_from_pagination_number', 'maximum_crawl_count'];
 
     public function isRunning(string $source): bool
     {

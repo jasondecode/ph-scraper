@@ -22,26 +22,36 @@ class LogEntries
 
     public function create(Scraper $scraper): LogEntries
     {
-        $this->logEntriesModel->is_running = true;
+        $this->logEntriesModel->fill([
+            'is_running' => true,
+            'source' => $scraper->getSource(),
+            'runned_at' => date('Y-m-d h:i:s')            
+        ])
+        ->save();
         
-        $this->logEntriesModel->source = $scraper->getSource();
-
-        $this->logEntriesModel->runned_at = date('Y-m-d h:i:s');
-
-        $this->logEntriesModel->save();
-
         return $this;
     }
 
     public function setIsFinished(): LogEntries
-    {
-        $this->logEntriesModel->is_running = false;
-
-        $this->logEntriesModel->completed_at = date('Y-m-d h:i:s');
-        
-        $this->logEntriesModel->save();
+    {         
+        $this->logEntriesModel->fill([
+            'is_running' => false,
+            'completed_at' => date('Y-m-d h:i:s')
+        ])
+        ->save();
 
         return $this;
+    }
+
+    public function setNavigationSettings(Scraper $scraper): LogEntries
+    {
+        $this->logEntriesModel->fill([
+            'start_from_pagination_number' => $scraper->getStartFromPaginationNumber(),
+            'maximum_crawl_count' => $scraper->getMaximumCrawlCount()
+        ])
+        ->save();
+
+        return $this;        
     }
 
     public function setError(string $error)

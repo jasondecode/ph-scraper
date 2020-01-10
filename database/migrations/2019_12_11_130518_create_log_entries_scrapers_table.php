@@ -25,6 +25,10 @@ class CreateLogEntriesScrapersTable extends Migration
             $table->dateTime('runned_at')->nullable()->default(null);
 
             $table->dateTime('completed_at')->nullable()->default(null);
+
+            $table->integer('start_from_pagination_number')->nullable()->default(null);
+
+            $table->integer('maximum_crawl_count')->nullable()->default(null);
             
             $table->timestamps();
         });
