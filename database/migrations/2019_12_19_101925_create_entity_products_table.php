@@ -20,6 +20,8 @@ class CreateEntityProductsTable extends Migration
 
             $table->integer('votes');
 
+            $table->date('featured_at');
+
             $table->timestamps();
         });
     }

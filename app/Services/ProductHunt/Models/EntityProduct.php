@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class EntityProduct extends Model
 {    
-    protected $fillable = ['votes', 'name'];
+    protected $fillable = ['votes', 'name', 'featured_at', 'updated_at'];
 
     public function entity()
     {
