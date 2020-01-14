@@ -39,7 +39,7 @@ class HomepageProducts
         
         $this->scraper->output->info('products:');
         
-        collect($products)->each(function ($product)  {             
+        collect($products)->each(function ($product)  {               
             $this->entity->createOrUpdate([
                 'entity_unique_code' => $product->getId(),
                 'entityable_type' => EntityProduct::class,
@@ -48,7 +48,8 @@ class HomepageProducts
             ], [
                 'votes' => $product->getVotes(),
                 'name' => $product->getName(),
-                'featured_at' => $product->getFeaturedAt(),                
+                'featured_at' => $product->getFeaturedAt(),
+                'topics' => json_encode($product->getTopics())
             ]);                                   
         })
         ->dump();

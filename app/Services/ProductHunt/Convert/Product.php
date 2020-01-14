@@ -15,11 +15,15 @@ class Product
     /** @var string */
     protected $featuredAt;    
 
+    /** @var array */
+    protected $topics;
+
     public function __construct(
         string $id,
         string $name,
         int $votes,
-        string $featuredAt
+        string $featuredAt,
+        array $topics
     ) {
         $this->id = $id;
 
@@ -27,18 +31,28 @@ class Product
 
         $this->votes = $votes;
 
-        $this->featuredAt = $featuredAt;        
+        $this->featuredAt = $featuredAt; 
+        
+        $this->topics = $topics;
     }
 
     public static function fromArray(array $edge): Product
     {
         $node = $edge['node'];
 
+        $featuredAt = preg_replace('/T[0-9]{2}.*/', '', $node['featured_at']);
+
+        $topics = collect($node['topics']['edges'])->map(function ($topic) {
+            return $topic['node']['name'];
+        })
+        ->toArray();
+
         return new self(
             $node['_id'],
             $node['name'],
             $node['votes_count'],
-            $node['featured_at']
+            $featuredAt,
+            $topics
         );
     }
 
@@ -59,6 +73,11 @@ class Product
 
     public function getFeaturedAt(): string
     {
-        return preg_replace('/T[0-9]{2}.*/', '', $this->featuredAt);
+        return $this->featuredAt;
+    }
+
+    public function getTopics(): array
+    {        
+        return $this->topics;
     }
 }
