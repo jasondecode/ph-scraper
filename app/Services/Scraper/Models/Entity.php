@@ -21,7 +21,7 @@ class Entity extends Model
         return $this->morphTo();
     }
 
-    public function createOrUpdate(array $find, array $entityAttributes, array $entityProfileAttributes): Entity
+    public function createOrUpdate(array $find, array $entityAttributes, array $entityProfileAttributes = []): Entity
     {
         $entity = $this->where($find)->orderBy('id', 'desc')->first();
 

@@ -5,7 +5,7 @@ namespace App\Console\Components\ProductHunt;
 use Illuminate\Console\Command;
 use App\Services\Scraper\Scraper;
 use App\Services\ProductHunt\Profiles\HomepageProducts;
-use App\Services\ProductHunt\Models\Products;
+use App\Services\ProductHunt\Models\EntityProduct;
 use App\Services\Scraper\Models\Navigation;
 
 class FetchHomepageProductsCommand extends Command
@@ -21,7 +21,7 @@ class FetchHomepageProductsCommand extends Command
         parent::__construct();
     }
     
-    public function handle(Scraper $scraper, Products $products)
+    public function handle(Scraper $scraper, EntityProduct $entityProduct)
     {
         $this->info('fetching homepage..');
 
@@ -30,7 +30,7 @@ class FetchHomepageProductsCommand extends Command
                 'user-agent' => config('scraper.user_agent'),
                 'content-type' => 'application/json'
             ],
-            'body' => $products->getHomepageRequestBody(),
+            'body' => $entityProduct->getHomepageRequestBody(),
         ];
         
         $scraper->createClient($clientOptions)

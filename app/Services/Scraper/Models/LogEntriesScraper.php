@@ -13,7 +13,8 @@ class LogEntriesScraper extends Model
         $entries = $this->where([
             ['source', '=', $source],
             ['is_running', '=', true]
-        ])->get();
+        ])
+        ->get();
 
         return count($entries) > 0;
     }
