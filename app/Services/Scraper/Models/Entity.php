@@ -21,7 +21,7 @@ class Entity extends Model
         return $this->morphTo();
     }
 
-    public function createOrUpdate($find, $entityAttributes, $entityProfileAttributes): Entity
+    public function createOrUpdate(array $find, array $entityAttributes, array $entityProfileAttributes): Entity
     {
         $entity = $this->where($find)->orderBy('id', 'desc')->first();
 
@@ -48,7 +48,7 @@ class Entity extends Model
         return $this;
     }
 
-    protected function saveEntity($entityProfileAttributes, $entityAttributes, $entityProfileClass): Entity
+    protected function saveEntity(array $entityProfileAttributes, array $entityAttributes, string $entityProfileClass): Entity
     {                   
         $entityProduct = new $entityProfileClass($entityProfileAttributes);
 

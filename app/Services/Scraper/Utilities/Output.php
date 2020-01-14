@@ -7,31 +7,31 @@ use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 class Output
 {
     /** @var Symfony\Component\Console\Output\ConsoleOutput */
-    protected $output;
+    protected $consoleOutput;
 
-    public function __construct()
+    public function __construct(ConsoleOutput $consoleOutput)
     {
-        $this->output = new ConsoleOutput;
+        $this->consoleOutput = $consoleOutput;
     }
 
     public function info(string $message)
     {
-        $this->output->writeln("<info>{$message}</info>");
+        $this->consoleOutput->writeln("<info>{$message}</info>");
     }
 
     public function warning(string $message) 
     {   
-        if (! $this->output->getFormatter()->hasStyle('warning')) {            
+        if (! $this->consoleOutput->getFormatter()->hasStyle('warning')) {            
             $style = new OutputFormatterStyle('yellow');
 
-            $this->output->getFormatter()->setStyle('warning', $style);
+            $this->consoleOutput->getFormatter()->setStyle('warning', $style);
         }
         
-        $this->output->writeln("<warning>{$message}</warning>");
+        $this->consoleOutput->writeln("<warning>{$message}</warning>");
     }
 
     public function error(string $message)
     {
-        $this->output->writeln("<error>{$message}</error>");
+        $this->consoleOutput->writeln("<error>{$message}</error>");
     }
 }
