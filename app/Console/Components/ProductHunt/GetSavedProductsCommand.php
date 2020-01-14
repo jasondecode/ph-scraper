@@ -6,10 +6,10 @@ use Illuminate\Console\Command;
 use App\Services\Scraper\Models\Entity;
 use App\Services\ProductHunt\Models\EntityProduct;
 
-class StatsProductsCommand extends Command
+class GetSavedProductsCommand extends Command
 {
     /** @var string*/
-    protected $signature = 'producthunt:stats-products';
+    protected $signature = 'producthunt:get-saved-products';
 
     /** @var string */
     protected $description = 'Get saved products';
@@ -31,7 +31,8 @@ class StatsProductsCommand extends Command
                 return [
                     'name' => $entity->entityable->name,
                     'votes' => $entity->entityable->votes,
-                    'featured_at' => $entity->entityable->featured_at
+                    'featured_at' => $entity->entityable->featured_at,
+                    'topics' => $entity->entityable->getTopics()
                 ];
             })
             ->sortByDesc('votes')
