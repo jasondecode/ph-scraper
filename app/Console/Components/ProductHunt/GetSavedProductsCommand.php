@@ -22,10 +22,10 @@ class GetSavedProductsCommand extends Command
     public function handle(Entity $entity)
     {        
         $entity->all()
-            ->reverse()
             ->filter(function ($entity) {
                 return $entity->entityable_type === EntityProduct::class;            
             })
+            ->reverse()
             ->unique('entity_unique_code')
             ->map(function ($entity) {
                 return [
@@ -34,6 +34,13 @@ class GetSavedProductsCommand extends Command
                     'featured_at' => $entity->entityable->featured_at,
                     'topics' => $entity->entityable->getTopics()
                 ];
+            })
+            ->filter(function ($entity) {
+                foreach ($entity['topics'] as $topic) {
+                    if (preg_match('/app|tool|saas|api/i', $topic)) {
+                        return true;
+                    }
+                }
             })
             ->sortByDesc('votes')
             ->slice(0, 10)
