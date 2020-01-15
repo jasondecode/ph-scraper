@@ -22,12 +22,12 @@ class GetProductsCommand extends Command
     public function handle(Entity $entity)
     {        
         $entity->all()
-            ->filter(function ($entity) {
+            ->filter(function (Entity $entity) {
                 return $entity->entityable_type === EntityProduct::class;            
             })
             ->reverse()
             ->unique('entity_unique_code')
-            ->map(function ($entity) {
+            ->map(function (Entity $entity) {
                 $featured_at = $entity->entityable->featured_at;
 
                 return [
@@ -40,12 +40,16 @@ class GetProductsCommand extends Command
                     'post' => "https://producthunt.com/posts/{$entity->entityable->slug}"
                 ];
             })
-            ->filter(function ($entity) {                
+            ->filter(function (array $entity) {
+                if (empty($entity['topics'])) {
+                    return false;
+                }
+                
                 $filter = config('producthunt.filter_topics_regex');
 
                 $reject = config('producthunt.reject_topics_regex');
-
-                foreach ($entity['topics'] as $topic) {
+                
+                return ! collect($entity['topics'])->map(function (string $topic) use ($filter, $reject) {
                     $isRejected = ! empty($reject)
                         ? preg_match($reject, $topic)
                         : false;
@@ -53,7 +57,8 @@ class GetProductsCommand extends Command
                     if (preg_match($filter, $topic) && ! $isRejected) {
                         return true;   
                     }
-                }
+                })
+                ->contains(false);
             })
             ->sortByDesc('votes')
             ->slice(0, 10)    
