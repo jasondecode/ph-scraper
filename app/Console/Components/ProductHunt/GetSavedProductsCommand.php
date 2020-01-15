@@ -36,8 +36,10 @@ class GetSavedProductsCommand extends Command
                 ];
             })
             ->filter(function ($entity) {
+                $filter = config('producthunt.filter_topics_regex');
+                           
                 foreach ($entity['topics'] as $topic) {
-                    if (preg_match('/app|tool|saas|api/i', $topic)) {
+                    if (preg_match($filter, $topic) || empty($filter)) {
                         return true;
                     }
                 }
