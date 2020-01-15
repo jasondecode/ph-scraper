@@ -35,7 +35,9 @@ class GetProductsCommand extends Command
                     'votes' => $entity->entityable->votes,
                     'featured_at' => $featured_at,
                     'featured_month' => preg_replace('/-[0-9]{2}$/', '', $featured_at),
-                    'topics' => $entity->entityable->getTopics()
+                    'topics' => $entity->entityable->getTopics(),
+                    'landing_page' => "https://producthunt.com{$entity->entityable->shortened_url}",
+                    'post' => "https://producthunt.com/posts/{$entity->entityable->slug}"
                 ];
             })
             ->filter(function ($entity) {                

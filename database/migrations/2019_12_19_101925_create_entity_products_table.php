@@ -24,6 +24,10 @@ class CreateEntityProductsTable extends Migration
 
             $table->mediumText('topics');
 
+            $table->mediumText('shortened_url');
+
+            $table->mediumText('slug');
+
             $table->timestamps();
         });
     }

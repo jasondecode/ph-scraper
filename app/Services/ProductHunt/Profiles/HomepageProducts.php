@@ -49,7 +49,9 @@ class HomepageProducts
                 'votes' => $product->getVotes(),
                 'name' => $product->getName(),
                 'featured_at' => $product->getFeaturedAt(),
-                'topics' => json_encode($product->getTopics())
+                'topics' => json_encode($product->getTopics()),
+                'shortened_url' => $product->getShortenedUrl(),
+                'slug' => $product->getSlug()
             ]);                                   
         })
         ->dump();

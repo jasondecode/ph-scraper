@@ -18,12 +18,20 @@ class Product
     /** @var array */
     protected $topics;
 
+    /** @var string */
+    protected $shortenedUrl;
+
+    /** @var string */
+    protected $slug;
+
     public function __construct(
         string $id,
         string $name,
         int $votes,
         string $featuredAt,
-        array $topics
+        array $topics,
+        string $shortenedUrl,
+        string $slug
     ) {
         $this->id = $id;
 
@@ -34,6 +42,10 @@ class Product
         $this->featuredAt = $featuredAt; 
         
         $this->topics = $topics;
+
+        $this->shortenedUrl = $shortenedUrl;
+
+        $this->slug = $slug;
     }
 
     public static function fromArray(array $edge): Product
@@ -52,7 +64,9 @@ class Product
             $node['name'],
             $node['votes_count'],
             $featuredAt,
-            $topics
+            $topics,
+            $node['shortened_url'],
+            $node['slug']
         );
     }
 
@@ -79,5 +93,15 @@ class Product
     public function getTopics(): array
     {        
         return $this->topics;
+    }
+
+    public function getShortenedUrl(): string
+    {
+        return $this->shortenedUrl;
+    }
+
+    public function getSlug(): string
+    {
+        return $this->slug;
     }
 }
