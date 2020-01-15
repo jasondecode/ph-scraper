@@ -46,10 +46,12 @@ class GetProductsCommand extends Command
                 $reject = config('producthunt.reject_topics_regex');
 
                 foreach ($entity['topics'] as $topic) {
-                    if ((empty($filter))
-                        || (preg_match($filter, $topic) && ! preg_match($reject, $topic))
-                    ) {
-                        return true;
+                    $isRejected = ! empty($reject)
+                        ? preg_match($reject, $topic)
+                        : false;
+
+                    if (preg_match($filter, $topic) && ! $isRejected) {
+                        return true;   
                     }
                 }
             })
