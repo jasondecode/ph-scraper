@@ -6,10 +6,10 @@ use Illuminate\Console\Command;
 use App\Services\Scraper\Models\Entity;
 use App\Services\ProductHunt\Models\EntityProduct;
 
-class GetSavedTopicsCommand extends Command
+class GetTopicsCommand extends Command
 {
     /** @var string*/
-    protected $signature = 'producthunt:get-saved-topics';
+    protected $signature = 'producthunt:get-topics';
 
     /** @var string */
     protected $description = 'Get saved topics';

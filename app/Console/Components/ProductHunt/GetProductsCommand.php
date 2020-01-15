@@ -6,10 +6,10 @@ use Illuminate\Console\Command;
 use App\Services\Scraper\Models\Entity;
 use App\Services\ProductHunt\Models\EntityProduct;
 
-class GetSavedProductsCommand extends Command
+class GetProductsCommand extends Command
 {
     /** @var string*/
-    protected $signature = 'producthunt:get-saved-products';
+    protected $signature = 'producthunt:get-products';
 
     /** @var string */
     protected $description = 'Get saved products';
@@ -28,24 +28,31 @@ class GetSavedProductsCommand extends Command
             ->reverse()
             ->unique('entity_unique_code')
             ->map(function ($entity) {
+                $featured_at = $entity->entityable->featured_at;
+
                 return [
                     'name' => $entity->entityable->name,
                     'votes' => $entity->entityable->votes,
-                    'featured_at' => $entity->entityable->featured_at,
+                    'featured_at' => $featured_at,
+                    'featured_month' => preg_replace('/-[0-9]{2}$/', '', $featured_at),
                     'topics' => $entity->entityable->getTopics()
                 ];
             })
-            ->filter(function ($entity) {
+            ->filter(function ($entity) {                
                 $filter = config('producthunt.filter_topics_regex');
-                           
+
+                $reject = config('producthunt.reject_topics_regex');
+
                 foreach ($entity['topics'] as $topic) {
-                    if (preg_match($filter, $topic) || empty($filter)) {
+                    if ((empty($filter))
+                        || (preg_match($filter, $topic) && ! preg_match($reject, $topic))
+                    ) {
                         return true;
                     }
                 }
             })
             ->sortByDesc('votes')
-            ->slice(0, 10)
-            ->dump();
+            ->slice(0, 10)    
+            ->dump();          
     }
 }
