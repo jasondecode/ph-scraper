@@ -5,6 +5,7 @@ namespace App\Console\Components\ProductHunt;
 use Illuminate\Console\Command;
 use App\Services\Scraper\Models\Entity;
 use App\Services\ProductHunt\Models\EntityProduct;
+use Illuminate\Support\Collection;
 
 class GetaverageProductVotesCommand extends Command
 {
@@ -22,22 +23,22 @@ class GetaverageProductVotesCommand extends Command
     public function handle(Entity $entity)
     {        
         $entity->all()
-            ->filter(function ($entity) {
+            ->filter(function (Entity $entity) {
                 return $entity->entityable_type === EntityProduct::class;            
             })
             ->reverse()
             ->unique('entity_unique_code')
-            ->map(function ($entity) {
-                $featured_at = $entity->entityable->featured_at;
+            ->map(function (Entity $entity) {
+                $featuredAt = $entity->entityable->featured_at;
 
                 return [                    
                     'votes' => $entity->entityable->votes,                    
-                    'featured_month' => preg_replace('/-[0-9]{2}$/', '', $featured_at),                    
+                    'featured_month' => preg_replace('/-[0-9]{2}$/', '', $featuredAt),                    
                 ];
             })
             ->sortByDesc('votes')            
-            ->groupBy('featured_month')                          
-            ->each(function ($products, $month) {
+            ->groupBy('featured_month')                
+            ->each(function (Collection $products, string $month) {
                 $totalVotes = $products->sum('votes');
 
                 $totalProducts = $products->count();

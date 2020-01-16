@@ -22,10 +22,10 @@ class GetTopicsCommand extends Command
     public function handle(Entity $entity)
     {        
         $entity->all()            
-            ->filter(function ($entity) {
+            ->filter(function (Entity $entity) {
                 return $entity->entityable_type === EntityProduct::class;            
             })
-            ->map(function ($entity) {
+            ->map(function (Entity $entity) {
                 return $entity->entityable->getTopics();
             })           
             ->flatten()

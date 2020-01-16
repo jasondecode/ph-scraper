@@ -50,11 +50,11 @@ class Entity extends Model
 
     protected function saveEntity(array $entityProfileAttributes, array $entityAttributes, string $entityProfileClass): Entity
     {                   
-        $entityProduct = new $entityProfileClass($entityProfileAttributes);
+        $entityProfile = new $entityProfileClass($entityProfileAttributes);
 
-        $entityProduct->save();
+        $entityProfile->save();
         
-        $entityProduct->entity()->save(new Entity($entityAttributes));
+        $entityProfile->entity()->save(new Entity($entityAttributes));
 
         return $this;
     }
