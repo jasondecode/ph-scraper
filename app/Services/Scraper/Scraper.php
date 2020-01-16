@@ -21,6 +21,9 @@ class Scraper
     /** @var App\Services\Scraper\Core\LogEntries */
     public $logEntries;
 
+    /** @var App\Services\Scraper\Models\Navigation */
+    protected $navigation;
+
     /** @var string */
     protected $source;
 
@@ -63,14 +66,19 @@ class Scraper
     /** @var GuzzleHttp\Psr7\Response */
     protected $response;
 
+    /** @var bool */
+    protected $continueFromLastSavedPageNumber = false;
+
     /** @var int|null */
     protected $currentRequestedPageNumber = null;
-
-    public function __construct(Output $output, LogEntries $logEntries)
+    
+    public function __construct(Output $output, LogEntries $logEntries, Navigation $navigation)
     {                   
         $this->output = $output;
 
         $this->logEntries = $logEntries;
+
+        $this->navigation = $navigation;
     }
 
     public function createClient(array $clientOptions): Scraper
@@ -241,6 +249,20 @@ class Scraper
         return $this->response;
     }
 
+    public function continueFromLastSavedPageNumber(): Scraper
+    {
+        $this->continueFromLastSavedPageNumber = true;
+
+        return $this;
+    }
+
+    public function dontContinueFromLastSavedPageNumber(): Scraper
+    {
+        $this->continueFromLastSavedPageNumber = false;
+
+        return $this;
+    }
+
     protected function setCurrentRequestedPageNumber(int $requestCount): Scraper
     {   
         if (! is_null($this->startFromPaginationNumber)) {
@@ -311,21 +333,20 @@ class Scraper
             return [];
         });
     }    
-
-    protected function continueFromLastSavedNavigation(): Scraper
-    {
-        $this->startFromPaginationNumber = null;
-        
-        return $this;
-    }
-
+    
     protected function scrapeThroughUrlCrawlQueue(Closure $callback)
     {
 
     }
     
     protected function scrapeThroughCrawlCount(Closure $callback)
-    {        
+    {               
+        if ($this->continueFromLastSavedPageNumber) {
+            $lastSavedPageNumber = $this->navigation->getLastPageNumber($this->source);
+
+            $this->setCurrentRequestedPageNumber($lastSavedPageNumber);
+        }
+
         try {
             for ($requestCount = 1; $requestCount <= $this->getMaximumCrawlCount(); $requestCount++) {                                      
                 $this->setRequestCount($requestCount);

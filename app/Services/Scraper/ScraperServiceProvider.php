@@ -7,6 +7,7 @@ use App\Services\Scraper\Models\LogEntriesScraper as LogEntriesScraperModel;
 use Illuminate\Support\ServiceProvider;
 use App\Services\Scraper\Utilities\Output;
 use Symfony\Component\Console\Output\ConsoleOutput;
+use App\Services\Scraper\Models\Navigation;
 
 class ScraperServiceProvider extends ServiceProvider
 {
@@ -15,7 +16,8 @@ class ScraperServiceProvider extends ServiceProvider
         $this->app->singleton(Scraper::class, function () {                
             return new Scraper(                
                 new Output(new ConsoleOutput),
-                new LogEntries(new LogEntriesScraperModel)
+                new LogEntries(new LogEntriesScraperModel),
+                new Navigation
             );
         });
     }
