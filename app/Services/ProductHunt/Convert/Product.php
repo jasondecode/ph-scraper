@@ -54,7 +54,7 @@ class Product
 
         $featuredAt = preg_replace('/T[0-9]{2}.*/', '', $node['featured_at']);
 
-        $topics = collect($node['topics']['edges'])->map(function ($topic) {
+        $topics = collect($node['topics']['edges'])->map(function (array $topic) {
             return $topic['node']['name'];
         })
         ->toArray();

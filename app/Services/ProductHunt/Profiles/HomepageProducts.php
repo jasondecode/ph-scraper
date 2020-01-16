@@ -4,6 +4,7 @@ namespace App\Services\ProductHunt\Profiles;
 use App\Services\Scraper\Scraper;
 use App\Services\Scraper\Navigation\GraphQLCursor;
 use App\Services\ProductHunt\Models\EntityProduct;
+use App\Services\ProductHunt\Convert\Product as ConvertProduct;
 use App\Services\ProductHunt\Convert\Products as ConvertProducts;
 use App\Services\ProductHunt\Convert\HomePage as ConvertHomepage;
 use App\Services\Scraper\Models\Entity;
@@ -39,7 +40,7 @@ class HomepageProducts
         
         $this->scraper->output->info('products:');
         
-        collect($products)->each(function ($product)  {               
+        collect($products)->each(function (ConvertProduct $product) {               
             $this->entity->createOrUpdate([
                 'entity_unique_code' => $product->getId(),
                 'entityable_type' => EntityProduct::class,

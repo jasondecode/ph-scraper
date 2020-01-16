@@ -15,7 +15,7 @@ class Products
 
     public static function fromArray(array $edges): Products
     {
-        $products = collect($edges)->map(function ($edge) {
+        $products = collect($edges)->map(function (array $edge) {
             return Product::fromArray($edge);
         })->toArray();
 
