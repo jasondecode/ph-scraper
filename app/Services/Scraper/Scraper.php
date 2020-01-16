@@ -143,7 +143,7 @@ class Scraper
         return $this->requestCount ?? 0;
     }
     
-    public function setStartFromPaginationNumber(int $startFromPaginationNumber): Scraper
+    public function setStartFromPaginationNumber(?int $startFromPaginationNumber): Scraper
     {
         $this->startFromPaginationNumber = $startFromPaginationNumber;
         
@@ -344,7 +344,7 @@ class Scraper
         if ($this->continueFromLastSavedPageNumber) {
             $lastSavedPageNumber = $this->navigation->getLastPageNumber($this->source);
 
-            $this->setCurrentRequestedPageNumber($lastSavedPageNumber);
+            $this->setStartFromPaginationNumber($lastSavedPageNumber);
         }
 
         try {

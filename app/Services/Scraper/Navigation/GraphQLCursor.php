@@ -32,6 +32,8 @@ class GraphQLCursor
             if (is_null($cursor)) {
                 throw new \Exception("Cannot find cursor for page number: {$startFromPaginationNumber}");
             }
+
+            return $cursor->code;
         }
         
         return $this->pageCursor;

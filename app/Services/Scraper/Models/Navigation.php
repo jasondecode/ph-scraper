@@ -14,11 +14,14 @@ class Navigation extends Model
     /** @var int */
     const TYPE_URL_PAGINATION = 2;
 
-    public function getLastPageNumber(string $source): int
+    public function getLastPageNumber(string $source): ?int
     {
-        return $this->where('source', $source)
+        $navigation = $this->where('source', $source)
             ->orderBy('page_number', 'desc')
-            ->first()
-            ->page_number;
+            ->first();
+
+        return ! is_null($navigation)
+            ? $navigation->page_number
+            : null;
     }
 }
