@@ -46,19 +46,25 @@ class GetProductsCommand extends Command
                 }
                 
                 $filter = config('producthunt.filter_topics_regex');
-
+                
+                foreach ($entity['topics'] as $topic) {
+                    if (! empty($filter) && preg_match($filter, $topic)) {
+                        return true;   
+                    }         
+                }                                   
+            })
+            ->reject(function (array $entity) {
                 $reject = config('producthunt.reject_topics_regex');
                 
-                return ! collect($entity['topics'])->map(function (string $topic) use ($filter, $reject) {
+                foreach ($entity['topics'] as $topic) {
                     $isRejected = ! empty($reject)
                         ? preg_match($reject, $topic)
                         : false;
 
-                    if (preg_match($filter, $topic) && ! $isRejected) {
+                    if ($isRejected) {
                         return true;   
-                    }
-                })
-                ->contains(false);
+                    }         
+                }                   
             })
             ->sortByDesc('votes')
             ->slice(0, 10)    
