@@ -37,17 +37,18 @@ class GetaverageProductVotesCommand extends Command
                 ];
             })
             ->sortByDesc('votes')            
-            ->groupBy('featured_month')                
-            ->each(function (Collection $products, string $month) {
+            ->groupBy('featured_month')                     
+            ->map(function (Collection $products, string $month) {
                 $totalVotes = $products->sum('votes');
 
                 $totalProducts = $products->count();
-                
-                dump([
+
+                return [
                     'featured_month' => $month,
                     'average_product_votes' => (int) round($totalVotes / $totalProducts, 0),
                     'total_products' => $totalProducts
-                ]);
-            });            
+                ];
+            })
+            ->dump();                      
     }
 }

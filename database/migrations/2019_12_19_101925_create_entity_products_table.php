@@ -22,7 +22,7 @@ class CreateEntityProductsTable extends Migration
 
             $table->date('featured_at');
 
-            $table->mediumText('topics');
+            $table->json('topics');
 
             $table->mediumText('shortened_url');
 

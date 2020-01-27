@@ -12,6 +12,8 @@ use App\Services\Scraper\Navigation\GraphQLCursor;
 use App\Services\Scraper\Utilities\Output;
 use App\Services\Scraper\Core\LogEntries;
 use App\Services\Scraper\Models\Entity;
+use Exception;
+use Generator;
 
 class Scraper
 {   
@@ -280,10 +282,10 @@ class Scraper
     }
 
     public function run()
-    {   
-        $this->output->info('Running scraper..');
-
+    {           
         if (! $this->logEntries->isRunning($this->source)) {
+            $this->output->info('Running scraper..');
+
             $this->logEntries->create($this);
                 
             if ($this->navigationType === Navigation::TYPE_GRAPHQL_CURSOR) {
@@ -334,9 +336,41 @@ class Scraper
         });
     }    
     
-    protected function scrapeThroughUrlCrawlQueue(Closure $callback)
-    {
+    protected function getCrawlQueueRequests(): Generator
+    {        
+        $crawlQueue = new CrawlQueue;
 
+        foreach ($crawlQueue->getPendingUrls() as $pendingUrl) {
+            yield $pendingUrl->id => new Request($this->requestMethod, $pendingUrl->url);
+        }        
+    }
+
+    protected function startScraperThrougCrawlQueue()
+    {
+        $scraperProfileClass = $this->scraperProfileClass();
+    
+        $scraperProfile = new $scraperProfileClass($this, new Entity);
+
+        $pool = new Pool($this->client, $this->getCrawlQueueRequests(), [
+            'concurrency' => $this->concurrency,
+            'options' => $this->client->getConfig(),
+            'fulfilled' => function (Response $response) use ($scraperProfile) {
+                $this->response = $response;
+
+                $scraperProfile->processOnRequestFulfilled();
+            },
+            'rejected' => function (\Exception $exception) use ($scraperProfile) {                
+                $scraperProfile->processOnRequestFailed();    
+                
+                $this->output->error($exception->getMessage());
+                
+                $this->logEntries->setError($exception->getMessage());
+            }
+        ]);
+
+        $promise = $pool->promise();
+
+        $promise->wait();
     }
     
     protected function scrapeThroughCrawlCount(Closure $callback)
@@ -364,10 +398,10 @@ class Scraper
                     usleep($delayBetweenRequests);
                 }
             }   
-        } catch (\Exception $e) {
-            $this->output->error($e->getMessage());
+        } catch (\Exception $exception) {
+            $this->output->error($exception->getMessage());
                 
-            $this->logEntries->setError($e->getMessage());
+            $this->logEntries->setError($exception->getMessage());
         }        
     }       
 }

@@ -21,7 +21,9 @@ class ResetIsRunningCommand extends Command
     public function handle(LogEntriesScraper $logEntriesScraper)
     {
         if (is_null($this->option('source'))) {
-            $this->info('reset all sources');
+            $source = $this->option('source');
+
+            $this->info("reset {$source}");
 
             $logEntriesScraper->where([
                 'is_running' => true
