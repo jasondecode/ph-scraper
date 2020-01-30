@@ -1,6 +1,6 @@
 ## Product Hunt scraper
 
-Currently only scraping products for personal useage, i will delete this repo in the future and make a Laravel package for the scraper boilerplate. 
+Currently only scraping products for personal usage, i will delete this repo in the future and make a Laravel package for the scraper boilerplate. 
 
 Commands can be found in: app/Console/Components get familiar with my code in app/Services
 
