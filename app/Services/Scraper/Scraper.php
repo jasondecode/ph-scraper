@@ -24,6 +24,12 @@ class Scraper
     /** @var App\Services\Scraper\Core\LogEntries */
     public $logEntries;
 
+    /** @var App\Services\Scraper\Models\Entity */
+    public $entity;
+
+    /** @var App\Services\Scraper\Models\CrawlQueue */
+    public $crawlQueue;
+
     /** @var App\Services\Scraper\Models\Navigation */
     protected $navigation;
 
@@ -75,13 +81,22 @@ class Scraper
     /** @var int|null */
     protected $currentRequestedPageNumber = null;
     
-    public function __construct(Output $output, LogEntries $logEntries, Navigation $navigation)
-    {                   
+    public function __construct(
+        Output $output, 
+        LogEntries $logEntries, 
+        Navigation $navigation, 
+        Entity $entity, 
+        CrawlQueue $crawQueue
+    ) {                   
         $this->output = $output;
 
         $this->logEntries = $logEntries;
 
         $this->navigation = $navigation;
+
+        $this->entity = $entity;
+
+        $this->crawlQueue = $crawQueue;
     }
 
     public function createClient(array $clientOptions): Scraper
@@ -329,7 +344,7 @@ class Scraper
         $this->scrapeThroughCrawlCount(function () use ($graphQLCursor) {                                    
             $scraperProfileClass = $this->scraperProfileClass();
     
-            $scraperProfile = new $scraperProfileClass($this, new Entity, new CrawlQueue);
+            $scraperProfile = new $scraperProfileClass($this);
             
             $this->response = $this->client->request(
                 $this->requestMethod,
@@ -354,9 +369,9 @@ class Scraper
         });
     }    
     
-    protected function getCrawlQueueRequests($crawlQueue): Generator
+    protected function getCrawlQueueRequests(): Generator
     {                     
-        foreach ($crawlQueue->getPendingUrls() as $pendingUrl) {            
+        foreach ($this->crawlQueue->getPendingUrls() as $pendingUrl) {            
             yield $pendingUrl->id => new Request($this->requestMethod, $pendingUrl->url);
         }        
     }
@@ -365,13 +380,12 @@ class Scraper
     {
         $scraperProfileClass = $this->scraperProfileClass();
     
-        $scraperProfile = new $scraperProfileClass($this, new Entity, new CrawlQueue);
+        $scraperProfile = new $scraperProfileClass($this);
         
-        $pool = new Pool($this->client, $this->getCrawlQueueRequests(new CrawlQueue), [
+        $pool = new Pool($this->client, $this->getCrawlQueueRequests(), [
             'concurrency' => 2,
             'options' => $this->client->getConfig(),
-            'fulfilled' => function (Response $response) use ($scraperProfile) {
-                dump($this->client);
+            'fulfilled' => function (Response $response) use ($scraperProfile) {                
                 $this->response = $response;
 
                 $scraperProfile->processOnRequestFulfilled();

@@ -10,19 +10,9 @@ class LandingPages
     /** @var App\Services\Scraper\Scraper */
     protected $scraper;
 
-    /** @var App\Services\Scraper\Models\Entity */
-    protected $entity;
-
-    /** @var App\Services\Scraper\Models\CrawlQueue */
-    protected $crawlQueue;
-
-    public function __construct(Scraper $scraper, Entity $entity, CrawlQueue $crawlQueue)
+    public function __construct(Scraper $scraper)
     {                        
-        $this->scraper = $scraper;      
-        
-        $this->entity = $entity;
-
-        $this->crawlQueue = $crawlQueue;
+        $this->scraper = $scraper;                      
     }
 
     public function processOnRequestFulfilled(): LandingPages

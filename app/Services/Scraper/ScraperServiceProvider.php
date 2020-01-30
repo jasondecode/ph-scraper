@@ -8,6 +8,8 @@ use Illuminate\Support\ServiceProvider;
 use App\Services\Scraper\Utilities\Output;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use App\Services\Scraper\Models\Navigation;
+use App\Services\Scraper\Models\CrawlQueue;
+use App\Services\Scraper\Models\Entity;
 
 class ScraperServiceProvider extends ServiceProvider
 {
@@ -17,7 +19,9 @@ class ScraperServiceProvider extends ServiceProvider
             return new Scraper(                
                 new Output(new ConsoleOutput),
                 new LogEntries(new LogEntriesScraperModel),
-                new Navigation
+                new Navigation,
+                new Entity,
+                new CrawlQueue
             );
         });
     }
