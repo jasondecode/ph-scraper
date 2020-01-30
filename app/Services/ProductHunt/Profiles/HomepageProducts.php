@@ -7,6 +7,7 @@ use App\Services\ProductHunt\Models\EntityProduct;
 use App\Services\ProductHunt\Convert\Product as ConvertProduct;
 use App\Services\ProductHunt\Convert\Products as ConvertProducts;
 use App\Services\ProductHunt\Convert\HomePage as ConvertHomepage;
+use App\Services\Scraper\Models\CrawlQueue;
 use App\Services\Scraper\Models\Entity;
 
 class HomepageProducts
@@ -17,11 +18,16 @@ class HomepageProducts
     /** @var App\Services\Scraper\Models\Entity */
     protected $entity;
 
-    public function __construct(Scraper $scraper, Entity $entity)
+    /** @var App\Services\Scraper\Models\CrawlQueue */
+    protected $crawlQueue;
+
+    public function __construct(Scraper $scraper, Entity $entity, CrawlQueue $crawlQueue)
     {                        
         $this->scraper = $scraper;      
         
         $this->entity = $entity;
+
+        $this->crawlQueue = $crawlQueue;
     }
 
     public function processOnRequestFulfilled(): HomepageProducts
@@ -40,20 +46,29 @@ class HomepageProducts
         
         $this->scraper->output->info('products:');
         
-        collect($products)->each(function (ConvertProduct $product) {               
+        collect($products)->each(function (ConvertProduct $product) {        
+            $shortendUrl = $product->getShortenedUrl();
+            
+            $source = $this->scraper->getSource();
+
             $this->entity->createOrUpdate([
                 'entity_unique_code' => $product->getId(),
                 'entityable_type' => EntityProduct::class,
             ], [
-                'source' => $this->scraper->getSource()
+                'source' => $source
             ], [
                 'votes' => $product->getVotes(),
                 'name' => $product->getName(),
                 'featured_at' => $product->getFeaturedAt(),
                 'topics' => json_encode($product->getTopics()),
-                'shortened_url' => $product->getShortenedUrl(),
+                'shortened_url' => $shortendUrl,
                 'slug' => $product->getSlug()
-            ]);                                   
+            ]);
+            
+            $this->crawlQueue->create([
+                'url' => "https://producthunt.com{$shortendUrl}", 
+                'source' => $source
+            ]);
         })
         ->dump();
         
