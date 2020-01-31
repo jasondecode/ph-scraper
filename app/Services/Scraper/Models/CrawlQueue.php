@@ -13,4 +13,11 @@ class CrawlQueue extends Model
     {
         return $this->where(['is_fetched' => false])->get();
     }   
+
+    public function urlIsFetched(int $crawlQueueId): CrawlQueue
+    {
+        $this->where(['id' => $crawlQueueId])->update(['is_fetched' => 1]);
+
+        return $this;
+    }
 }

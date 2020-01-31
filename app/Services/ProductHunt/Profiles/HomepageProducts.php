@@ -7,8 +7,6 @@ use App\Services\ProductHunt\Models\EntityProduct;
 use App\Services\ProductHunt\Convert\Product as ConvertProduct;
 use App\Services\ProductHunt\Convert\Products as ConvertProducts;
 use App\Services\ProductHunt\Convert\HomePage as ConvertHomepage;
-use App\Services\Scraper\Models\CrawlQueue;
-use App\Services\Scraper\Models\Entity;
 
 class HomepageProducts
 {

@@ -2,8 +2,6 @@
 namespace App\Services\ProductHunt\Profiles;
 
 use App\Services\Scraper\Scraper;
-use App\Services\Scraper\Models\CrawlQueue;
-use App\Services\Scraper\Models\Entity;
 
 class LandingPages
 {

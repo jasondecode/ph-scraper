@@ -50,6 +50,9 @@ class Scraper
 
     /** @var int|null */
     protected $maximumDelayBetweenRequests = null;
+    
+    /** @var int */
+    protected $concurrency = 2;
 
     /** @var \GuzzleHttp\Client */
     protected $client;
@@ -105,7 +108,7 @@ class Scraper
             RequestOptions::COOKIES => true,
             RequestOptions::CONNECT_TIMEOUT => 10,
             RequestOptions::TIMEOUT => 10,
-            RequestOptions::ALLOW_REDIRECTS => false,
+            RequestOptions::ALLOW_REDIRECTS => true,
             RequestOptions::HEADERS => $clientOptions['headers'],
             RequestOptions::BODY => $clientOptions['body']
         ]);
@@ -159,6 +162,18 @@ class Scraper
     public function getRequestCount(): int
     {
         return $this->requestCount ?? 0;
+    }
+
+    public function setConcurrency(int $concurrency): Scraper
+    {
+        $this->concurrency = $concurrency;
+
+        return $this;
+    }
+
+    public function getConcurrency(): int
+    {
+        return $this->concurrency;
     }
     
     public function setStartFromPaginationNumber(?int $startFromPaginationNumber): Scraper
@@ -369,24 +384,25 @@ class Scraper
         });
     }    
     
-    protected function getCrawlQueueRequests(): Generator
-    {                     
-        foreach ($this->crawlQueue->getPendingUrls() as $pendingUrl) {            
-            yield $pendingUrl->id => new Request($this->requestMethod, $pendingUrl->url);
-        }        
-    }
-
     protected function startScraperThrougCrawlQueue()
     {
         $scraperProfileClass = $this->scraperProfileClass();
     
         $scraperProfile = new $scraperProfileClass($this);
         
-        $pool = new Pool($this->client, $this->getCrawlQueueRequests(), [
-            'concurrency' => 2,
+        $crawlQueueRequests = (function () {
+            foreach ($this->crawlQueue->getPendingUrls() as $pendingUrl) {            
+                yield $pendingUrl->id => new Request($this->requestMethod, $pendingUrl->url);
+            }
+        })();
+
+        $pool = new Pool($this->client, $crawlQueueRequests, [
+            'concurrency' => $this->concurrency,
             'options' => $this->client->getConfig(),
-            'fulfilled' => function (Response $response) use ($scraperProfile) {                
+            'fulfilled' => function (Response $response, int $crawlQueueId) use ($scraperProfile) {                                
                 $this->response = $response;
+
+                $this->crawlQueue->urlIsFetched($crawlQueueId);
 
                 $scraperProfile->processOnRequestFulfilled();
             },
