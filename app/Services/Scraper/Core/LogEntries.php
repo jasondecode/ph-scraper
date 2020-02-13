@@ -21,9 +21,11 @@ class LogEntries
     }
 
     public function create(Scraper $scraper): LogEntries
-    {
+    {        
+        $isRunning = ! $scraper->getInputOption('silent');
+        
         $this->logEntriesModel->fill([
-            'is_running' => true,
+            'is_running' => $isRunning,
             'source' => $scraper->getSource(),
             'runned_at' => date('Y-m-d h:i:s')            
         ])

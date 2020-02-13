@@ -16,7 +16,7 @@ use App\Services\Scraper\Models\Entity;
 use Exception;
 
 class Scraper
-{   
+{       
     /** @var App\Services\Scraper\Utilities\Output */
     public $output;
 
@@ -70,6 +70,9 @@ class Scraper
 
     /** @var string|null */
     protected $scraperProfileClass = null;
+
+    /** @var array */
+    protected $inputOptions;
 
     /** @var int */
     protected $navigationType;
@@ -223,6 +226,18 @@ class Scraper
         return $this->scraperProfileClass;
     }
 
+    public function setInputOptions(array $options): Scraper
+    {
+        $this->inputOptions = $options;
+
+        return $this;
+    }
+
+    public function getInputOption(string $option)
+    {
+        return $this->inputOptions[$option];
+    }
+
     public function setNavigationType(int $navigationType): Scraper
     {
         $this->navigationType = $navigationType;
@@ -312,7 +327,7 @@ class Scraper
     }
 
     public function runNavigationScraper()
-    {           
+    {                   
         $this->runScraper('navigation', function () {
             if ($this->navigationType === Navigation::TYPE_GRAPHQL_CURSOR) {
                 $this->startScraperWithGraphQLCursor();
@@ -334,7 +349,11 @@ class Scraper
     protected function runScraper(string $scraperTypeName, Closure $callback)
     {
         if (! $this->logEntries->isRunning($this->source)) {
-            $this->output->info("Running {$scraperTypeName} scraper..");
+            if (! $this->getInputOption('silent')) {
+                $this->output->info("Running {$scraperTypeName} scraper..");
+            } else {
+                $this->output->info("Running {$scraperTypeName} scraper in silent mode..");
+            }            
 
             $this->logEntries->create($this);
             

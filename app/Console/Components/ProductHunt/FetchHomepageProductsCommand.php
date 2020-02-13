@@ -2,27 +2,24 @@
 
 namespace App\Console\Components\ProductHunt;
 
-use Illuminate\Console\Command;
+use App\Services\Scraper\Core\ProfileCommand;
 use App\Services\Scraper\Scraper;
 use App\Services\ProductHunt\Profiles\HomepageProducts;
 use App\Services\ProductHunt\Models\EntityProduct;
 use App\Services\Scraper\Models\Navigation;
 
-class FetchHomepageProductsCommand extends Command
+class FetchHomepageProductsCommand extends ProfileCommand
 {
     /** @var string*/
     protected $signature = 'producthunt:fetch-homepage';
 
     /** @var string */
     protected $description = 'Fetch homepage products';
-
-    public function __construct()
-    {
-        parent::__construct();
-    }
-    
+        
     public function handle(Scraper $scraper, EntityProduct $entityProduct)
-    {
+    {           
+        $this->boot($scraper);
+
         $this->info('fetching homepage..');
 
         $clientOptions = [

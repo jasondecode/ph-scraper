@@ -2,25 +2,22 @@
 
 namespace App\Console\Components\ProductHunt;
 
-use Illuminate\Console\Command;
+use App\Services\Scraper\Core\ProfileCommand;
 use App\Services\Scraper\Scraper;
 use App\Services\ProductHunt\Profiles\LandingPages;
 
-class FetchLandingPagesCommand extends Command
+class FetchLandingPagesCommand extends ProfileCommand
 {
     /** @var string*/
     protected $signature = 'producthunt:fetch-landing-pages';
 
     /** @var string */
     protected $description = 'Fetch landing pages from the crawl queue';
-
-    public function __construct()
-    {
-        parent::__construct();
-    }
-    
+        
     public function handle(Scraper $scraper)
     {
+        $this->boot($scraper);
+
         $this->info('fetching homepage..');
 
         $clientOptions = [
