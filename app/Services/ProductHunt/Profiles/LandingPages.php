@@ -13,7 +13,7 @@ class LandingPages
         $this->scraper = $scraper;                      
     }
 
-    public function processOnRequestFulfilled(): LandingPages
+    public function processOnRequestIsFulfilled(): LandingPages
     {        
         $statusCode = $this->scraper->getResponse()->getStatusCode();
 
@@ -22,7 +22,7 @@ class LandingPages
         return $this;        
     }
 
-    public function processOnRequestFailed(): LandingPages
+    public function processOnRequestIsFailed(): LandingPages
     {
         return $this;
     }

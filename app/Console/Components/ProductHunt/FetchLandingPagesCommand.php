@@ -33,7 +33,7 @@ class FetchLandingPagesCommand extends Command
         
         $scraper->createClient($clientOptions)
             ->setSource('landing-pages')            
-            ->setRequestMethod('POST')
+            ->setRequestMethod('GET')
             ->setScraperProfileClass(LandingPages::class)                        
             ->setMinimumDelayBetweenRequests(1000000)
             ->setMaximumDelayBetweenRequests(2000000)

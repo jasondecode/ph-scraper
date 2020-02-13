@@ -18,7 +18,7 @@ class HomepageProducts
         $this->scraper = $scraper;      
     }
 
-    public function processOnRequestFulfilled(): HomepageProducts
+    public function processOnRequestIsFulfilled(): HomepageProducts
     {        
         $responseContent = $this->scraper->getResponse()->getBody()->getContents();
 
@@ -67,7 +67,7 @@ class HomepageProducts
         return $this;        
     }
 
-    public function processOnRequestFailed(): HomepageProducts
+    public function processOnRequestIsFailed(): HomepageProducts
     {
         return $this;
     }

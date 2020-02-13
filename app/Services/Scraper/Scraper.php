@@ -14,7 +14,6 @@ use App\Services\Scraper\Core\LogEntries;
 use App\Services\Scraper\Models\CrawlQueue;
 use App\Services\Scraper\Models\Entity;
 use Exception;
-use Generator;
 
 class Scraper
 {   
@@ -31,7 +30,7 @@ class Scraper
     public $crawlQueue;
 
     /** @var App\Services\Scraper\Models\Navigation */
-    protected $navigation;
+    public $navigation;
 
     /** @var string */
     protected $source;
@@ -296,7 +295,7 @@ class Scraper
         return $this;
     }
 
-    protected function setCurrentRequestedPageNumber(int $requestCount): Scraper
+    public function setCurrentRequestedPageNumber(int $requestCount): Scraper
     {   
         if (! is_null($this->startFromPaginationNumber)) {
             $this->currentRequestedPageNumber = $this->startFromPaginationNumber + $requestCount;
@@ -314,11 +313,7 @@ class Scraper
 
     public function runNavigationScraper()
     {           
-        if (! $this->logEntries->isRunning($this->source)) {
-            $this->output->info('Running scraper..');
-
-            $this->logEntries->create($this);
-                
+        $this->runScraper('navigation', function () {
             if ($this->navigationType === Navigation::TYPE_GRAPHQL_CURSOR) {
                 $this->startScraperWithGraphQLCursor();
             }
@@ -326,23 +321,24 @@ class Scraper
             if ($this->navigationType === Navigation::TYPE_URL_PAGINATION) {
                 $this->startScraperWithUrlPagination();
             }
-
-            $this->logEntries->setIsFinished();
-
-            $this->output->info('Running scraper completed');
-        } else {
-            $this->output->error("Source: {$this->source} is already running");
-        }        
+        });     
     }
 
     public function runCrawlQueueScraper()
     {
+        $this->runScraper('queue', function () {
+            $this->startScraperThrougCrawlQueue();
+        });
+    }
+
+    protected function runScraper(string $scraperTypeName, Closure $callback)
+    {
         if (! $this->logEntries->isRunning($this->source)) {
-            $this->output->info('Running scraper..');
+            $this->output->info("Running {$scraperTypeName} scraper..");
 
             $this->logEntries->create($this);
             
-            $this->startScraperThrougCrawlQueue();
+            call_user_func($callback);
             
             $this->logEntries->setIsFinished();
 
@@ -367,7 +363,7 @@ class Scraper
                 $scraperProfile->getRequestOptions($graphQLCursor)
             );
             
-            $scraperProfile->processOnRequestFulfilled();
+            $scraperProfile->processOnRequestIsFulfilled();
 
             $nextPageCursor = $scraperProfile->getEndCursor();
                         
@@ -402,12 +398,12 @@ class Scraper
             'fulfilled' => function (Response $response, int $crawlQueueId) use ($scraperProfile) {                                
                 $this->response = $response;
 
-                $this->crawlQueue->urlIsFetched($crawlQueueId);
+                $this->crawlQueue->setUrlIsFetched($crawlQueueId);
 
-                $scraperProfile->processOnRequestFulfilled();
+                $scraperProfile->processOnRequestIsFulfilled();
             },
             'rejected' => function (Exception $exception) use ($scraperProfile) {                
-                $scraperProfile->processOnRequestFailed();    
+                $scraperProfile->processOnRequestIsFailed();    
                 
                 $this->output->error($exception->getMessage());
                 
