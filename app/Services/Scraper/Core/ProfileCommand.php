@@ -8,7 +8,7 @@ class ProfileCommand extends Command
 {   
     public function __construct()
     {        
-        $this->signature = $this->signature . '{--silent}';
+        $this->signature = $this->signature . '{--silent} {--force}';
 
         parent::__construct();
     }

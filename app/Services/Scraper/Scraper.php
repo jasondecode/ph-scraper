@@ -348,11 +348,11 @@ class Scraper
 
     protected function runScraper(string $scraperTypeName, Closure $callback)
     {
-        if (! $this->logEntries->isRunning($this->source)) {
-            if (! $this->getInputOption('silent')) {
-                $this->output->info("Running {$scraperTypeName} scraper..");
+        if ($this->getInputOption('force') || ! $this->logEntries->isRunning($this->source)) {
+            if ($this->getInputOption('silent')) {
+                $this->output->info("Running {$scraperTypeName} scraper in silent mode..");                
             } else {
-                $this->output->info("Running {$scraperTypeName} scraper in silent mode..");
+                $this->output->info("Running {$scraperTypeName} scraper..");
             }            
 
             $this->logEntries->create($this);
