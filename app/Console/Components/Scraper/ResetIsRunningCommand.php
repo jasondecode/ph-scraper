@@ -26,7 +26,8 @@ class ResetIsRunningCommand extends Command
             $this->info("reset {$source}");
 
             $logEntriesScraper->where([
-                'is_running' => true
+                'is_running' => true,
+                'source' => $this->option('source')
             ])
             ->update([
                 'is_running' => false
@@ -35,8 +36,7 @@ class ResetIsRunningCommand extends Command
             $this->info('reset all sources');
 
             $logEntriesScraper->where([
-                'is_running' => true,
-                'source' => $this->option('source')
+                'is_running' => true,                
             ])
             ->update([
                 'is_running' => false
