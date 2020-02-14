@@ -4,7 +4,7 @@ namespace App\Services\Scraper\Core;
 use Illuminate\Console\Command;
 use App\Services\Scraper\Scraper;
 
-class ProfileCommand extends Command
+abstract class ProfileCommand extends Command
 {   
     public function __construct()
     {        

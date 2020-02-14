@@ -18,7 +18,7 @@ class HomepageProducts
         $this->scraper = $scraper;      
     }
 
-    public function processOnRequestIsFulfilled(): HomepageProducts
+    public function processOnRequestIsFulfilled()
     {        
         $responseContent = $this->scraper->getResponse()->getBody()->getContents();
 
@@ -62,19 +62,22 @@ class HomepageProducts
         
         $this->scraper->output->info('page info:');
 
-        dump($this->pageInfo);
-
-        return $this;        
+        dump($this->pageInfo);              
     }
 
-    public function processOnRequestIsFailed(): HomepageProducts
+    public function processOnRequestIsFailed()
     {
-        return $this;
+                
     }
 
-    public function getEndCursor(): string
+    public function getEndCursor(): ?string
     {
         return $this->pageInfo->getEndCursor();
+    }
+
+    public function getHasNextPage(): bool
+    {
+        return $this->pageInfo->getHasNextPage();
     }
 
     public function getRequestOptions(GraphQLCursor $graphQLCursor): array

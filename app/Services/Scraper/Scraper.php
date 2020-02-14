@@ -385,7 +385,7 @@ class Scraper
             $scraperProfile->processOnRequestIsFulfilled();
 
             $nextPageCursor = $scraperProfile->getEndCursor();
-                        
+            ///////          
             $graphQLCursor->setNextPageCursor($nextPageCursor);                                    
 
             $graphQLCursor->saveNextPageCursor($this);
@@ -443,8 +443,10 @@ class Scraper
             $this->setStartFromPaginationNumber($lastSavedPageNumber);
         }
 
-        try {
-            for ($requestCount = 1; $requestCount <= $this->getMaximumCrawlCount(); $requestCount++) {                                      
+        try {            
+            $requestCount = 1;;
+            
+            while (true) {
                 $this->setRequestCount($requestCount);
     
                 $this->setCurrentRequestedPageNumber($requestCount);
@@ -459,7 +461,13 @@ class Scraper
     
                     usleep($delayBetweenRequests);
                 }
-            }   
+            
+                if ($requestCount >= $this->getMaximumCrawlCount() || ! true) {
+                    break;
+                }
+            
+                $requestCount++;
+            }
         } catch (Exception $exception) {
             $this->output->error($exception->getMessage());
                 

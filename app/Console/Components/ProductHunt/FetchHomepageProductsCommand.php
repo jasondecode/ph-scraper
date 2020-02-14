@@ -2,13 +2,13 @@
 
 namespace App\Console\Components\ProductHunt;
 
-use App\Services\Scraper\Core\ProfileCommand;
+use App\Services\Scraper\Core\ProfileCommand as ScraperProfileCommand;
 use App\Services\Scraper\Scraper;
 use App\Services\ProductHunt\Profiles\HomepageProducts;
 use App\Services\ProductHunt\Models\EntityProduct;
 use App\Services\Scraper\Models\Navigation;
 
-class FetchHomepageProductsCommand extends ProfileCommand
+class FetchHomepageProductsCommand extends ScraperProfileCommand
 {
     /** @var string*/
     protected $signature = 'producthunt:fetch-homepage';

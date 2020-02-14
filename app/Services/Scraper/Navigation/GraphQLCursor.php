@@ -3,6 +3,7 @@ namespace App\Services\Scraper\Navigation;
 
 use App\Services\Scraper\Scraper;
 use App\Services\Scraper\Models\Navigation;
+use Exception;
 
 class GraphQLCursor
 {   
@@ -22,15 +23,15 @@ class GraphQLCursor
         
         if ($scraper->getRequestCount() === 1 && ! is_null($startFromPaginationNumber)) {            
             $cursor = Navigation::where([
-                ['type', Navigation::TYPE_GRAPHQL_CURSOR],
-                ['source', $scraper->getSource()],
-                ['page_number', $startFromPaginationNumber]
+                'type' => Navigation::TYPE_GRAPHQL_CURSOR,
+                'source' => $scraper->getSource(),
+                'page_number' => $startFromPaginationNumber
             ])
             ->orderBy('id', 'desc')
             ->first();
                    
-            if (is_null($cursor)) {
-                throw new \Exception("Cannot find cursor for page number: {$startFromPaginationNumber}");
+            if (is_null($cursor)) {                
+                throw new Exception("Cannot find cursor for page number: {$startFromPaginationNumber}");
             }
 
             return $cursor->code;

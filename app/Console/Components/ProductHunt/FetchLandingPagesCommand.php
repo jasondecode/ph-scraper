@@ -2,11 +2,11 @@
 
 namespace App\Console\Components\ProductHunt;
 
-use App\Services\Scraper\Core\ProfileCommand;
+use App\Services\Scraper\Core\ProfileCommand as ScraperProfileCommand;
 use App\Services\Scraper\Scraper;
 use App\Services\ProductHunt\Profiles\LandingPages;
 
-class FetchLandingPagesCommand extends ProfileCommand
+class FetchLandingPagesCommand extends ScraperProfileCommand
 {
     /** @var string*/
     protected $signature = 'producthunt:fetch-landing-pages';

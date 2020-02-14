@@ -3,14 +3,14 @@ namespace App\Services\ProductHunt\Convert;
 
 class Homepage
 {
-    /** @var string */
+    /** @var string|null */
     protected $endCursor;
 
     /** @var bool */
     protected $hasNextPage;
 
     public function __construct(
-        string $endCursor,
+        ?string $endCursor,
         bool $hasNextPage
     ) {
         $this->endCursor = $endCursor;
@@ -20,13 +20,17 @@ class Homepage
 
     public static function fromArray(array $pageInfo): Homepage
     {
+        $endCursor = isset($pageInfo['endCursor']) && ! is_null($pageInfo['endCursor'])
+            ? $pageInfo['endCursor']
+            : null;
+
         return new self(
-            $pageInfo['endCursor'],
+            $endCursor,
             $pageInfo['hasNextPage']
         );
     }
 
-    public function getEndCursor(): string
+    public function getEndCursor(): ?string
     {
         return $this->endCursor;
     }

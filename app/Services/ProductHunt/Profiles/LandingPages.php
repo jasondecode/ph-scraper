@@ -13,18 +13,16 @@ class LandingPages
         $this->scraper = $scraper;                      
     }
 
-    public function processOnRequestIsFulfilled(): LandingPages
+    public function processOnRequestIsFulfilled()
     {        
         $statusCode = $this->scraper->getResponse()->getStatusCode();
 
-        $this->scraper->output->info("status code: {$statusCode}");
-                
-        return $this;        
+        $this->scraper->output->info("status code: {$statusCode}");                
     }
 
-    public function processOnRequestIsFailed(): LandingPages
+    public function processOnRequestIsFailed()
     {
-        return $this;
+        
     }
 
 }
