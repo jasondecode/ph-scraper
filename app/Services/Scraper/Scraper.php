@@ -81,6 +81,9 @@ class Scraper
     protected $response;
 
     /** @var bool */
+    protected $hasNextPage = true;
+
+    /** @var bool */
     protected $continueFromLastSavedPageNumber = false;
 
     /** @var int|null */
@@ -296,6 +299,20 @@ class Scraper
         return $this->response;
     }
 
+    public function hasNextPage(): Scraper
+    {
+        $this->hasNextPageCursor = true;
+
+        return $this;
+    }
+
+    public function doesntHaveNextPage(): Scraper
+    {
+        $this->hasNextPageCursor = false;
+
+        return $this;
+    }
+
     public function continueFromLastSavedPageNumber(): Scraper
     {
         $this->continueFromLastSavedPageNumber = true;
@@ -384,11 +401,17 @@ class Scraper
             
             $scraperProfile->processOnRequestIsFulfilled();
 
-            $nextPageCursor = $scraperProfile->getEndCursor();
-            ///////          
-            $graphQLCursor->setNextPageCursor($nextPageCursor);                                    
+            if ($scraperProfile->getHasNextPage()) {
+                $this->hasNextPage();
 
-            $graphQLCursor->saveNextPageCursor($this);
+                $nextPageCursor = $scraperProfile->getEndCursor();
+
+                $graphQLCursor->setNextPageCursor($nextPageCursor);                                    
+
+                $graphQLCursor->saveNextPageCursor($this);   
+            } else {
+                $this->doesntHaveNextPage();
+            }
         });
     }
 
@@ -452,7 +475,11 @@ class Scraper
                 $this->setCurrentRequestedPageNumber($requestCount);
     
                 call_user_func($callback);                
-    
+                
+                if ($requestCount >= $this->getMaximumCrawlCount() || ! $this->hasNextPage) {
+                    break;
+                }
+
                 if ($requestCount > 1) {
                     $delayBetweenRequests = rand(
                         $this->getMinimumDelayBetweenRequests(), 
@@ -461,11 +488,7 @@ class Scraper
     
                     usleep($delayBetweenRequests);
                 }
-            
-                if ($requestCount >= $this->getMaximumCrawlCount() || ! true) {
-                    break;
-                }
-            
+                
                 $requestCount++;
             }
         } catch (Exception $exception) {
