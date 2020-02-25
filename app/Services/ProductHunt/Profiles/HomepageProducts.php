@@ -1,14 +1,18 @@
 <?php
 namespace App\Services\ProductHunt\Profiles;
 
+use Exception;
+use GuzzleHttp\Psr7\Response;
 use App\Services\Scraper\Scraper;
+use App\Services\Scraper\Core\ProfileRequest;
+use App\Services\Scraper\Core\ProcessWithGraphQL;
 use App\Services\Scraper\Navigation\GraphQLCursor;
 use App\Services\ProductHunt\Models\EntityProduct;
 use App\Services\ProductHunt\Convert\Product as ConvertProduct;
 use App\Services\ProductHunt\Convert\Products as ConvertProducts;
 use App\Services\ProductHunt\Convert\HomePage as ConvertHomepage;
 
-class HomepageProducts
+class HomepageProducts implements ProfileRequest, ProcessWithGraphQL
 {
     /** @var App\Services\Scraper\Scraper */
     protected $scraper;
@@ -18,9 +22,9 @@ class HomepageProducts
         $this->scraper = $scraper;      
     }
 
-    public function processOnRequestIsFulfilled()
-    {        
-        $responseContent = $this->scraper->getResponse()->getBody()->getContents();
+    public function processOnRequestIsFulfilled(Response $response)
+    {                        
+        $responseContent = $response->getBody()->getContents();
 
         $sections = json_decode($responseContent, true)['data']['sections'];
 
@@ -65,9 +69,9 @@ class HomepageProducts
         dump($this->pageInfo);              
     }
 
-    public function processOnRequestIsFailed()
+    public function processOnRequestIsFailed(Exception $exception)
     {
-                
+        
     }
 
     public function getEndCursor(): ?string

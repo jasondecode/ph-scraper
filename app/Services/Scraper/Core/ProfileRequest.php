@@ -1,9 +1,12 @@
 <?php
 namespace App\Services\Scraper\Core;
 
+use Exception;
+use GuzzleHttp\Psr7\Response;
+
 interface ProfileRequest
 {
-    public function processOnRequestIsFulfilled();
+    public function processOnRequestIsFulfilled(Response $response);
 
-    public function processOnRequestIsFailed();
+    public function processOnRequestIsFailed(Exception $exception);
 }

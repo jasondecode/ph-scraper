@@ -2,6 +2,7 @@
 namespace App\Services\Scraper;
 
 use Closure;
+use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Psr7\Request;
@@ -13,7 +14,6 @@ use App\Services\Scraper\Utilities\Output;
 use App\Services\Scraper\Core\LogEntries;
 use App\Services\Scraper\Models\CrawlQueue;
 use App\Services\Scraper\Models\Entity;
-use Exception;
 
 class Scraper
 {       
@@ -76,9 +76,6 @@ class Scraper
 
     /** @var int */
     protected $navigationType;
-
-    /** @var GuzzleHttp\Psr7\Response */
-    protected $response;
 
     /** @var bool */
     protected $hasNextPage = true;
@@ -292,12 +289,7 @@ class Scraper
     public function getClientBody(): array
     {
         return $this->clientBody;
-    }
-
-    public function getResponse(): Response
-    {
-        return $this->response;
-    }
+    }    
 
     public function hasNextPage(): Scraper
     {
@@ -392,26 +384,30 @@ class Scraper
             $scraperProfileClass = $this->scraperProfileClass();
     
             $scraperProfile = new $scraperProfileClass($this);
-            
-            $this->response = $this->client->request(
-                $this->requestMethod,
-                $this->scrapeUrl, 
-                $scraperProfile->getRequestOptions($graphQLCursor)
-            );
-            
-            $scraperProfile->processOnRequestIsFulfilled();
+                                    
+            try {
+                $response = $this->client->request(
+                    $this->requestMethod,
+                    $this->scrapeUrl, 
+                    $scraperProfile->getRequestOptions($graphQLCursor)
+                );
 
-            if ($scraperProfile->getHasNextPage()) {
-                $this->hasNextPage();
+                $scraperProfile->processOnRequestIsFulfilled($response);
 
-                $nextPageCursor = $scraperProfile->getEndCursor();
+                if ($scraperProfile->getHasNextPage()) {
+                    $this->hasNextPage();
 
-                $graphQLCursor->setNextPageCursor($nextPageCursor);                                    
+                    $nextPageCursor = $scraperProfile->getEndCursor();
 
-                $graphQLCursor->saveNextPageCursor($this);   
-            } else {
-                $this->doesntHaveNextPage();
-            }
+                    $graphQLCursor->setNextPageCursor($nextPageCursor);                                    
+
+                    $graphQLCursor->saveNextPageCursor($this);   
+                } else {
+                    $this->doesntHaveNextPage();
+                }
+            } catch (Exception $exception) {
+                $scraperProfile->processOnRequestIsFailed($exception);
+            }                        
         });
     }
 
@@ -438,14 +434,12 @@ class Scraper
             'concurrency' => $this->concurrency,
             'options' => $this->client->getConfig(),
             'fulfilled' => function (Response $response, int $crawlQueueId) use ($scraperProfile) {                                
-                $this->response = $response;
-
                 $this->crawlQueue->setUrlIsFetched($crawlQueueId);
 
-                $scraperProfile->processOnRequestIsFulfilled();
+                $scraperProfile->processOnRequestIsFulfilled($response);
             },
             'rejected' => function (Exception $exception) use ($scraperProfile) {                
-                $scraperProfile->processOnRequestIsFailed();    
+                $scraperProfile->processOnRequestIsFailed($exception);    
                 
                 $this->output->error($exception->getMessage());
                 
@@ -467,7 +461,7 @@ class Scraper
         }
 
         try {            
-            $requestCount = 1;;
+            $requestCount = 1;
             
             while (true) {
                 $this->setRequestCount($requestCount);

@@ -1,9 +1,12 @@
 <?php
 namespace App\Services\ProductHunt\Profiles;
 
+use Exception;
+use GuzzleHttp\Psr7\Response;
 use App\Services\Scraper\Scraper;
+use App\Services\Scraper\Core\ProfileRequest;
 
-class LandingPages
+class LandingPages implements ProfileRequest
 {
     /** @var App\Services\Scraper\Scraper */
     protected $scraper;
@@ -13,16 +16,15 @@ class LandingPages
         $this->scraper = $scraper;                      
     }
 
-    public function processOnRequestIsFulfilled()
+    public function processOnRequestIsFulfilled(Response $response)
     {        
-        $statusCode = $this->scraper->getResponse()->getStatusCode();
+        $statusCode = $response->getStatusCode();
 
         $this->scraper->output->info("status code: {$statusCode}");                
     }
 
-    public function processOnRequestIsFailed()
+    public function processOnRequestIsFailed(Exception $exception)
     {
         
     }
-
 }
