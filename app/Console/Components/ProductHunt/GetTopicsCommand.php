@@ -21,15 +21,16 @@ class GetTopicsCommand extends Command
     
     public function handle(Entity $entity)
     {        
-        $entity->all()            
-            ->filter(function (Entity $entity) {
-                return $entity->entityable_type === EntityProduct::class;            
-            })
-            ->map(function (Entity $entity) {
-                return $entity->entityable->getTopics();
-            })           
-            ->flatten()
-            ->unique()
-            ->dump();
+        $entity->where([
+            'entityable_type' => EntityProduct::class
+        ])
+        ->get()
+        ->map(function (Entity $entity) {
+            return $entity->entityable->getTopics();
+        })           
+        ->flatten()
+        ->unique()
+        ->values()
+        ->dump();
     }
 }

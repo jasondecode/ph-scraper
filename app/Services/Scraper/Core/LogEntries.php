@@ -58,9 +58,10 @@ class LogEntries
 
     public function setError(string $error)
     {
-        $this->logEntriesModel->error = $error;
-        
-        $this->logEntriesModel->save();
+        $this->logEntriesModel->fill([
+            'error' => $error
+        ])
+        ->save();
 
         return $this;
     }
