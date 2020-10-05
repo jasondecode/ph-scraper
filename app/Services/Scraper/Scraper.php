@@ -406,6 +406,8 @@ class Scraper
                     $this->doesntHaveNextPage();
                 }
             } catch (Exception $exception) {
+                $this->output->error($exception->getMessage());
+
                 $scraperProfile->processOnRequestIsFailed($exception);
             }                        
         });

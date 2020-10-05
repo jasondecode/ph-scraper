@@ -24,9 +24,13 @@ class HomepageProducts implements ProfileRequest, ProcessWithGraphQL
 
     public function processOnRequestIsFulfilled(Response $response)
     {                        
-        $responseContent = $response->getBody()->getContents();
+        $responseContent = json_decode($response->getBody()->getContents(), true);
 
-        $sections = json_decode($responseContent, true)['data']['sections'];
+        if (isset($responseContent['errors'])) {
+            throw new Exception(json_encode($responseContent));
+        }
+
+        $sections = $responseContent['data']['sections'];
 
         $products = ConvertProducts::fromArray(
             $sections['edges'][0]['node']['posts']['edges']
